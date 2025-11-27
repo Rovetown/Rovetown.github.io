@@ -393,8 +393,8 @@ RELIC_SOLVER (TotalRelicChests, DivineCaps, RelicCaps, divineChance, wantedD1amo
           // Multi-line output in the <pre> with plain-language phrasing first
           this.output =
             `Probability of succeeding: ${percent}\n` +
-            // TODO: Make this optional via a checkbox as the reroll amount can be confusing and nonsensical to some users
-            //`On average you'll need about ${avgRerollsRounded} rerolls to get one success.\n` +
+            // TODO: Make this optional via a checkbox as the reroll amount can be apparently confusing and nonsensical to some users (and me)
+            `On average you'll need about ${avgRerollsRounded} rerolls to be successful.\n` +
             `Average gems spent until target rolled successfully: ${isFinite(expectedGems) ? expectedGems.toLocaleString() : '∞'}` //(at ${costPerReroll} gems per reroll)\n`
         }
       }
