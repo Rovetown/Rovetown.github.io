@@ -36,23 +36,43 @@
     <h1>Relic Solver</h1>
 
     <div class="box">
-      <label>Relics:</label>
-      <input v-model.number="Relics" type="number">
+      <label>{{ labelTotalRelicChests }}</label>
+      <input v-model.number="TotalRelicChests" type="number">
     </div>
 
     <div class="box">
-      <label>FixedDivs:</label>
-      <input v-model.number="FixedDivs" type="number">
+      <label>{{ labelTotalDivineChests }}</label>
+      <input v-model.number="TotalDivineChests" type="number">
     </div>
 
     <div class="box">
-      <label>DivCap:</label>
-      <input v-model.number="DivCap" type="number">
+      <label>{{ labelTotalDivineRelics }}</label>
+      <input v-model.number="TotalDivineRelics" type="number">
     </div>
 
     <div class="box">
-      <label>ProbDiv:</label>
-      <input v-model.number="ProbDiv" type="number" step="0.000001">
+      <label>{{ labelDivineChance }}</label>
+      <input v-model.number="divineChance" type="number" step="0.000001">
+    </div>
+
+    <div class="box">
+      <label>{{ labelWantedD1 }}</label>
+      <input v-model.number="wantedD1amount" type="number">
+    </div>
+
+    <div class="box">
+      <label>{{ labelWantedD2 }}</label>
+      <input v-model.number="wantedD2amount" type="number">
+    </div>
+
+    <div class="box">
+      <label>{{ labelWantedD3 }}</label>
+      <input v-model.number="wantedD3amount" type="number">
+    </div>
+
+    <div class="box">
+      <label>{{ labelWantedD4 }}</label>
+      <input v-model.number="wantedD4amount" type="number">
     </div>
 
     <div class="box">
@@ -260,21 +280,38 @@ RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChan
     const app = Vue.createApp({
       data() {
         return {
-          Relics: 325160,
-          FixedDivs: 6,
-          DivCap: 7,
-          ProbDiv: 1/25000,
+          TotalRelicChests: 325160,
+          TotalDivineChests: 6,
+          TotalDivineRelics: 7,
+          divineChance: 1/25000,
+          // Wanted amounts (editable via UI)
+          wantedD1amount: 8,
+          wantedD2amount: 7,
+          wantedD3amount: 7,
+          wantedD4amount: 7,
+          // Label strings: edit these in the code to customize text shown next to inputs
+          labelTotalRelicChests: 'TotalRelicChests:',
+          labelTotalDivineChests: 'TotalDivineChests:',
+          labelTotalDivineRelics: 'TotalDivineRelics:',
+          labelDivineChance: 'divineChance:',
+          labelWantedD1: 'wantedD1amount:',
+          labelWantedD2: 'wantedD2amount:',
+          labelWantedD3: 'wantedD3amount:',
+          labelWantedD4: 'wantedD4amount:',
           output: "Click Run Solver"
         };
       },
       methods: {
         runSolver() {
           const result = RELIC_SOLVER(
-            this.Relics,
-            this.FixedDivs,
-            this.DivCap,
-            this.ProbDiv,
-            8, 7, 7, 7 // You can make these inputs too if you want
+            this.TotalRelicChests,
+            this.TotalDivineChests,
+            this.TotalDivineRelics,
+            this.divineChance,
+            this.wantedD1amount,
+            this.wantedD2amount,
+            this.wantedD3amount,
+            this.wantedD4amount
           );
 
           this.output = "Result: " + result;
