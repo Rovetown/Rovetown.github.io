@@ -75,26 +75,9 @@
       <input v-model.number="wantedD4amount" type="number">
     </div>
 
-    <!-- Reroll cost is fixed at 200 gems (hardcoded) -->
-
     <div class="box">
-      <label>{{ labelCurrentD1 }}</label>
-      <input v-model.number="currentD1amount" type="number">
-    </div>
-
-    <div class="box">
-      <label>{{ labelCurrentD2 }}</label>
-      <input v-model.number="currentD2amount" type="number">
-    </div>
-
-    <div class="box">
-      <label>{{ labelCurrentD3 }}</label>
-      <input v-model.number="currentD3amount" type="number">
-    </div>
-
-    <div class="box">
-      <label>{{ labelCurrentD4 }}</label>
-      <input v-model.number="currentD4amount" type="number">
+      <label>{{ labelCostPerRun }}</label>
+      <input v-model.number="costPerRun" type="number">
     </div>
 
     <div class="box">
@@ -272,38 +255,29 @@ function binomPMF(numberOfDivineRollSuccesses, numberOfAttempts, probabilityOfSu
 }
 
 
-function RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChance, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, currentD1amount, currentD2amount, currentD3amount, currentD4amount) {
-  // currentD#amount are the counts you already own before opening any relic chests
+function RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChance, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) {
   let sectionSum = 0
   for (let numberOfDivineRollSuccesses = 0; numberOfDivineRollSuccesses <= TotalRelicChests; numberOfDivineRollSuccesses++) {
     if (Number.isNaN(binomPMF(numberOfDivineRollSuccesses, TotalRelicChests, divineChance))) {
-      console.log("numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses, "FINAL RESULT =", sectionSum);
+      console.log("numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses, "FINAL RESULT =", sectionSum, "avg gems after numberOfDivineRollSuccesses=", (Math.round(200/sectionSum)).toLocaleString());
       return  sectionSum;
-    }
-    // pass current owned counts into the state runner so the distribution starts from those amounts
-    sectionSum += binomPMF(numberOfDivineRollSuccesses, TotalRelicChests, divineChance)
-      * RUN_STATE(numberOfDivineRollSuccesses + TotalDivineChests, 1.0,
-          currentD1amount, currentD2amount, currentD3amount, currentD4amount,
-          TotalDivineRelics, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    console.log("numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses, "prob after numberOfDivineRollSuccesses =", sectionSum);
+}
+    sectionSum+= binomPMF(numberOfDivineRollSuccesses, TotalRelicChests, divineChance) * RUN_STATE(numberOfDivineRollSuccesses + TotalDivineChests, 1.0, 0, 0, 0, 0, TotalDivineRelics, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount)
+    console.log("numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses, "prob after numberOfDivineRollSuccesses =", sectionSum, "avg gems after numberOfDivineRollSuccesses=", (Math.round(200/sectionSum)).toLocaleString());
   }
-  console.log("FINAL RESULT =", sectionSum);
+  console.log("FINAL RESULT =", sectionSum, "avg gems after numberOfDivineRollSuccesses=", (Math.round(200/sectionSum)).toLocaleString());
   return sectionSum;
 }
 
 // TODO: Make this user selectable
 
-let TotalRelicChests = 325160;
+let TotalRelicChests =325160
 let TotalDivineChests = 6; // amount of divine chests
 let TotalDivineRelics = 7; // how many divines you have in total
-let divineChance = 1/25000;
-let wantedD1amount = 8, wantedD2amount = 7, wantedD3amount = 7, wantedD4amount = 7; // target amounts
-let currentD1amount = 0, currentD2amount = 0, currentD3amount = 0, currentD4amount = 0; // starting inventory
+let divineChance = 1/25000
+let wantedD1amount = 8, wantedD2amount = 7, wantedD3amount = 7, wantedD4amount = 7; // amount of divine relics across all 4 divine relic types (or the wanted amount, idk)
 
-// Example call (kept for compatibility); current owned counts are zeros here
-RELIC_SOLVER(TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChance,
-  wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
-  currentD1amount, currentD2amount, currentD3amount, currentD4amount);
+RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChance, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
 
 
     // ---------------------------
@@ -315,29 +289,23 @@ RELIC_SOLVER(TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChanc
           TotalDivineChests: 6,
           TotalDivineRelics: 7,
           divineChance: 1/25000,
+          // cost per full run (gems per session of opening `TotalRelicChests` chests)
+          costPerRun: 200,
           // Wanted amounts (editable via UI)
           wantedD1amount: 8,
           wantedD2amount: 7,
           wantedD3amount: 7,
           wantedD4amount: 7,
-          // Current (already-owned) divine relic counts
-          currentD1amount: 0,
-          currentD2amount: 0,
-          currentD3amount: 0,
-          currentD4amount: 0,
           // Label strings: edit these in the code to customize text shown next to inputs
           labelTotalRelicChests: 'TotalRelicChests:',
           labelTotalDivineChests: 'TotalDivineChests:',
           labelTotalDivineRelics: 'TotalDivineRelics:',
           labelDivineChance: 'divineChance:',
+          labelCostPerRun: 'Cost per full run (gems):',
           labelWantedD1: 'wantedD1amount:',
           labelWantedD2: 'wantedD2amount:',
           labelWantedD3: 'wantedD3amount:',
           labelWantedD4: 'wantedD4amount:',
-          labelCurrentD1: 'current D1 (owned):',
-          labelCurrentD2: 'current D2 (owned):',
-          labelCurrentD3: 'current D3 (owned):',
-          labelCurrentD4: 'current D4 (owned):',
           output: "Click Run Solver"
         };
       },
@@ -356,18 +324,17 @@ RELIC_SOLVER(TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChanc
 
           // Format a few helpful values
           const percent = (prob * 100).toFixed(6) + "%";
-          // Plain-language values for non-mathy users
-          const costPerReroll = 200; // fixed reroll cost (gems)
-          const avgRerolls = (prob > 0) ? (1 / prob) : Infinity;
-          const avgRerollsRounded = isFinite(avgRerolls) ? Math.round(avgRerolls).toLocaleString() : '∞';
-          const expectedGems = (prob > 0) ? Math.round(costPerReroll * avgRerolls) : '∞';
+          const oneInN = (prob > 0) ? (`1 in ${Math.round(1 / prob).toLocaleString()}`) : '∞';
+          const expectedRuns = (prob > 0) ? (1 / prob) : Infinity;
+          const expectedGems = (prob > 0) ? Math.round(this.costPerRun * expectedRuns) : '∞';
 
-          // Multi-line output in the <pre> with plain-language phrasing first
+          // Multi-line output in the <pre>
           this.output =
-            `Probability this session succeeds: ${percent}\n` +
-            `On average you'll need about ${avgRerollsRounded} full rerolls to get one success.\n` +
-            `Average gems spent until success: ${isFinite(expectedGems) ? expectedGems.toLocaleString() : '∞'} (at ${costPerReroll} gems per reroll)\n` +
-            `Raw probability (decimal): ${prob}`;
+            `Probability (decimal): ${prob}\n` +
+            `Probability (percent): ${percent}\n` +
+            `One-in-N (approx): ${oneInN}\n` +
+            `Expected runs (avg): ${isFinite(expectedRuns) ? expectedRuns.toFixed(2) : '∞'}\n` +
+            `Expected gems (avg): ${isFinite(expectedGems) ? expectedGems.toLocaleString() : '∞'}`;
         }
       }
     });
