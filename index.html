@@ -76,6 +76,11 @@
     </div>
 
     <div class="box">
+      <label>{{ labelCostPerRun }}</label>
+      <input v-model.number="costPerRun" type="number">
+    </div>
+
+    <div class="box">
       <button @click="runSolver">Run Solver</button>
     </div>
 
@@ -284,6 +289,8 @@ RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChan
           TotalDivineChests: 6,
           TotalDivineRelics: 7,
           divineChance: 1/25000,
+          // cost per full run (gems per session of opening `TotalRelicChests` chests)
+          costPerRun: 200,
           // Wanted amounts (editable via UI)
           wantedD1amount: 8,
           wantedD2amount: 7,
@@ -294,6 +301,7 @@ RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChan
           labelTotalDivineChests: 'TotalDivineChests:',
           labelTotalDivineRelics: 'TotalDivineRelics:',
           labelDivineChance: 'divineChance:',
+          labelCostPerRun: 'Cost per full run (gems):',
           labelWantedD1: 'wantedD1amount:',
           labelWantedD2: 'wantedD2amount:',
           labelWantedD3: 'wantedD3amount:',
@@ -303,7 +311,7 @@ RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChan
       },
       methods: {
         runSolver() {
-          const result = RELIC_SOLVER(
+          const prob = RELIC_SOLVER(
             this.TotalRelicChests,
             this.TotalDivineChests,
             this.TotalDivineRelics,
@@ -314,7 +322,19 @@ RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChan
             this.wantedD4amount
           );
 
-          this.output = "Result: " + result;
+          // Format a few helpful values
+          const percent = (prob * 100).toFixed(6) + "%";
+          const oneInN = (prob > 0) ? (`1 in ${Math.round(1 / prob).toLocaleString()}`) : '∞';
+          const expectedRuns = (prob > 0) ? (1 / prob) : Infinity;
+          const expectedGems = (prob > 0) ? Math.round(this.costPerRun * expectedRuns) : '∞';
+
+          // Multi-line output in the <pre>
+          this.output =
+            `Probability (decimal): ${prob}\n` +
+            `Probability (percent): ${percent}\n` +
+            `One-in-N (approx): ${oneInN}\n` +
+            `Expected runs (avg): ${isFinite(expectedRuns) ? expectedRuns.toFixed(2) : '∞'}\n` +
+            `Expected gems (avg): ${isFinite(expectedGems) ? expectedGems.toLocaleString() : '∞'}`;
         }
       }
     });
