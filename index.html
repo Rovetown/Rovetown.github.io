@@ -42,12 +42,12 @@
 
     <div class="box">
       <label>{{ labelTotalDivineChests }}</label>
-      <input v-model.number="TotalDivineChests" type="number">
+      <input v-model.number="DivineCaps" type="number">
     </div>
 
     <div class="box">
       <label>{{ labelTotalDivineRelics }}</label>
-      <input v-model.number="TotalDivineRelics" type="number">
+      <input v-model.number="RelicCaps" type="number">
     </div>
 
     <div style="height:12px"></div>
@@ -74,12 +74,7 @@
 
     <div style="height:12px"></div>
 
-    <div class="box">
-      <label>{{ labelDivineChance }}</label>
-      <input v-model.number="divineChance" type="number" step="0.000001">
-    </div>
-
-    <div style="height:12px"></div>
+    <!-- divineChance is fixed at 1/25000 and hidden from UI -->
 
     <div class="box">
       <label>{{ labelWantedD1 }}</label>
@@ -281,7 +276,7 @@ function binomPMF(numberOfDivineRollSuccesses, numberOfAttempts, probabilityOfSu
 
 
 function RELIC_SOLVER (
-  TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChance,
+  TotalRelicChests, DivineCaps, RelicCaps, divineChance,
   wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
   currentD1amount, currentD2amount, currentD3amount, currentD4amount
 ) {
@@ -291,6 +286,9 @@ function RELIC_SOLVER (
 
     // calculate binomial probability once
     const prob = binomPMF(numberOfDivineRollSuccesses, TotalRelicChests, divineChance);
+
+    // Debug: log every k (numberOfDivineRollSuccesses) and its binomial probability
+    console.log(`k=${numberOfDivineRollSuccesses}`, `binomProb=${prob}`);
 
     // BUG FIX: break out if probability is NaN or Infinity
     if (Number.isNaN(prob) || prob === Infinity) {
@@ -303,10 +301,10 @@ function RELIC_SOLVER (
 
     // pass current owned counts into the state runner so the distribution starts from those amounts
     sectionSum += prob * RUN_STATE(
-      numberOfDivineRollSuccesses + TotalDivineChests,
+      numberOfDivineRollSuccesses + DivineCaps,
       1.0,
       currentD1amount, currentD2amount, currentD3amount, currentD4amount,
-      TotalDivineRelics,
+      RelicCaps,
       wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount
     );
 
@@ -323,13 +321,13 @@ function RELIC_SOLVER (
 // TODO: Make this user selectable
 
 let TotalRelicChests = 325160;
-let TotalDivineChests = 6; // amount of divine chests
-let TotalDivineRelics = 7; // how many divines you have in total
+let DivineCaps = 6; // amount of divine chests
+let RelicCaps = 7; // how many divines you have in total
 let divineChance = 1/25000
 let wantedD1amount = 8, wantedD2amount = 7, wantedD3amount = 7, wantedD4amount = 7; // amount of divine relics across all 4 divine relic types (or the wanted amount, idk)
 let currentD1amount = 0, currentD2amount = 0, currentD3amount = 0, currentD4amount = 0; // example starting inventory
 
-RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChance, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, currentD1amount, currentD2amount, currentD3amount, currentD4amount);
+RELIC_SOLVER (TotalRelicChests, DivineCaps, RelicCaps, divineChance, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, currentD1amount, currentD2amount, currentD3amount, currentD4amount);
 
 
     // ---------------------------
@@ -337,25 +335,24 @@ RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChan
     const app = Vue.createApp({
       data() {
         return {
-          TotalRelicChests: 325160,
-          TotalDivineChests: 6,
-          TotalDivineRelics: 7,
-          divineChance: 1/25000,
+          TotalRelicChests: 850000,
+          DivineCaps: 20,
+          RelicCaps: 18,
           // Wanted amounts (editable via UI)
-          wantedD1amount: 8,
-          wantedD2amount: 7,
-          wantedD3amount: 7,
-          wantedD4amount: 7,
+          wantedD1amount: 0,
+          wantedD2amount: 18,
+          wantedD3amount: 18,
+          wantedD4amount: 18,
           // Current (already-owned) divine relic counts
           currentD1amount: 0,
           currentD2amount: 0,
           currentD3amount: 0,
           currentD4amount: 0,
           // Label strings: edit these in the code to customize text shown next to inputs
-          labelTotalRelicChests: 'TotalRelicChests:',
-          labelTotalDivineChests: 'TotalDivineChests:',
-          labelTotalDivineRelics: 'TotalDivineRelics:',
-          labelDivineChance: 'divineChance:',
+          labelTotalRelicChests: 'Total Relic Chests you opened:',
+          labelTotalDivineChests: 'Total Divine Chests you own:',
+          labelTotalDivineRelics: 'Total Divine Relics you own (Divine Chests + natural Divine Relics):',
+          // Divine chance is fixed and hidden from the UI.
           labelWantedD1: 'wantedD1amount:',
           labelWantedD2: 'wantedD2amount:',
           labelWantedD3: 'wantedD3amount:',
@@ -371,9 +368,9 @@ RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChan
         runSolver() {
           const prob = RELIC_SOLVER(
             this.TotalRelicChests,
-            this.TotalDivineChests,
-            this.TotalDivineRelics,
-            this.divineChance,
+            this.DivineCaps,
+            this.RelicCaps,
+            divineChance, // fixed global value (1/25000)
             this.wantedD1amount,
             this.wantedD2amount,
             this.wantedD3amount,
