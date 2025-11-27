@@ -280,20 +280,42 @@ function binomPMF(numberOfDivineRollSuccesses, numberOfAttempts, probabilityOfSu
 }
 
 
-function RELIC_SOLVER (TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChance, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, currentD1amount, currentD2amount, currentD3amount, currentD4amount) {
-  let sectionSum = 0
+function RELIC_SOLVER (
+  TotalRelicChests, TotalDivineChests, TotalDivineRelics, divineChance,
+  wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+  currentD1amount, currentD2amount, currentD3amount, currentD4amount
+) {
+  let sectionSum = 0;
+
   for (let numberOfDivineRollSuccesses = 0; numberOfDivineRollSuccesses <= TotalRelicChests; numberOfDivineRollSuccesses++) {
-    if (Number.isNaN(binomPMF(numberOfDivineRollSuccesses, TotalRelicChests, divineChance))) {
-      console.log("numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses, "FINAL RESULT =", sectionSum);
-      return  sectionSum;
+
+    // calculate binomial probability once
+    const prob = binomPMF(numberOfDivineRollSuccesses, TotalRelicChests, divineChance);
+
+    // BUG FIX: break out if probability is NaN or Infinity
+    if (Number.isNaN(prob) || prob === Infinity) {
+      console.log(
+        "numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses,
+        "FINAL RESULT =", sectionSum
+      );
+      return sectionSum;
     }
+
     // pass current owned counts into the state runner so the distribution starts from those amounts
-    sectionSum += binomPMF(numberOfDivineRollSuccesses, TotalRelicChests, divineChance)
-      * RUN_STATE(numberOfDivineRollSuccesses + TotalDivineChests, 1.0,
-          currentD1amount, currentD2amount, currentD3amount, currentD4amount,
-          TotalDivineRelics, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    console.log("numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses, "prob after numberOfDivineRollSuccesses =", sectionSum);
+    sectionSum += prob * RUN_STATE(
+      numberOfDivineRollSuccesses + TotalDivineChests,
+      1.0,
+      currentD1amount, currentD2amount, currentD3amount, currentD4amount,
+      TotalDivineRelics,
+      wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount
+    );
+
+    console.log(
+      "numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses,
+      "prob after numberOfDivineRollSuccesses =", sectionSum
+    );
   }
+
   console.log("FINAL RESULT =", sectionSum);
   return sectionSum;
 }
