@@ -1,410 +1,893 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>Relic Solver UI</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #222;
-      color: #eee;
+  <head>
+    <meta charset="UTF-8" />
+    <title>Relic Solver UI</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://unpkg.com/naive-ui"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #222;
+        color: #eee;
+      }
+      .box {
+        margin-bottom: 10px;
+      }
+      input {
+        padding: 5px;
+        width: 120px;
+      }
+      label {
+        display: inline-block;
+        width: 280px; /* space between label and input */
+        margin-right: 8px;
+      }
+      button {
+        padding: 10px 20px;
+        cursor: pointer;
+      }
+      pre {
+        background: #111;
+        padding: 10px;
+        margin-top: 20px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="app">
+      <h1>Relic Solver</h1>
+
+      <div style="background:#3b2f00; color:#fff; padding:10px; border-radius:6px; margin-bottom:12px; font-weight:700;">
+        Experimental changes applied — this site contains experimental features that may break the website. Use at your own risk.
+      </div>
+
+      <n-button>{{ message }}</n-button>
+
+<template>
+  <n-button>naive-ui</n-button>
+</template>
+
+<script>
+  import { defineComponent } from 'vue'
+  import { NButton } from 'naive-ui'
+
+  export default defineComponent({
+    components: {
+      NButton
     }
-    .box {
-      margin-bottom: 10px;
-    }
-    input {
-      padding: 5px;
-      width: 120px;
-    }
-    label {
-      display: inline-block;
-      width: 280px; /* space between label and input */
-      margin-right: 8px;
-    }
-    button {
-      padding: 10px 20px;
-      cursor: pointer;
-    }
-    pre {
-      background: #111;
-      padding: 10px;
-      margin-top: 20px;
-      border-radius: 4px;
-    }
-  </style>
-</head>
+  })
+</script>
 
-<body>
-  <div id="app">
-    <h1>Relic Solver</h1>
+      <div class="box">
+        <label>{{ labelTotalRelicChests }}</label>
+        <input v-model.number="TotalRelicChests" type="number" />
+      </div>
 
-    <div class="box">
-      <label>{{ labelTotalRelicChests }}</label>
-      <input v-model.number="TotalRelicChests" type="number">
+      <div class="box">
+        <label>{{ labelTotalDivineChests }}</label>
+        <input v-model.number="DivineCaps" type="number" />
+      </div>
+
+      <div class="box">
+        <label>{{ labelTotalDivineRelics }}</label>
+        <input v-model.number="RelicCaps" type="number" />
+      </div>
+
+      <div style="height: 12px"></div>
+
+      <div class="box">
+        <label style="font-weight: 700; color: #ffcc66"
+          >Set your currently owned Divine Relics (Optional and experimental, if
+          unsure keep at 0)</label
+        >
+      </div>
+
+      <div class="box">
+        <label>{{ labelCurrentD1 }}</label>
+        <input v-model.number="currentD1amount" type="number" />
+      </div>
+
+      <div class="box">
+        <label>{{ labelCurrentD2 }}</label>
+        <input v-model.number="currentD2amount" type="number" />
+      </div>
+
+      <div class="box">
+        <label>{{ labelCurrentD3 }}</label>
+        <input v-model.number="currentD3amount" type="number" />
+      </div>
+
+      <div class="box">
+        <label>{{ labelCurrentD4 }}</label>
+        <input v-model.number="currentD4amount" type="number" />
+      </div>
+
+      <div style="height: 12px"></div>
+
+      <!-- divineChance is fixed at 1/25000 and hidden from UI -->
+
+      <div class="box">
+        <label>{{ labelWantedD1 }}</label>
+        <input v-model.number="wantedD1amount" type="number" />
+      </div>
+
+      <div class="box">
+        <label>{{ labelWantedD2 }}</label>
+        <input v-model.number="wantedD2amount" type="number" />
+      </div>
+
+      <div class="box">
+        <label>{{ labelWantedD3 }}</label>
+        <input v-model.number="wantedD3amount" type="number" />
+      </div>
+
+      <div class="box">
+        <label>{{ labelWantedD4 }}</label>
+        <input v-model.number="wantedD4amount" type="number" />
+      </div>
+
+      <div style="height: 12px"></div>
+
+      <!-- Reroll cost is fixed at 200 gems (hardcoded) -->
+
+      <div class="box">
+        <button @click="runSolver">Run Solver</button>
+      </div>
+
+      <pre>{{ output }}</pre>
     </div>
 
-    <div class="box">
-      <label>{{ labelTotalDivineChests }}</label>
-      <input v-model.number="DivineCaps" type="number">
-    </div>
+    <script>
 
-    <div class="box">
-      <label>{{ labelTotalDivineRelics }}</label>
-      <input v-model.number="RelicCaps" type="number">
-    </div>
+      let cacheProbabilityStates = new Map(); // cache for (remainingChests,d1CurrentRelics,d2CurrentRelics,d3CurrentRelics,d4CurrentRelics) -> probability for probabilityOfSuccess=1
 
-    <div style="height:12px"></div>
+      // Helper to build a key for the cacheProbabilityStates map
+      function key(
+        remainingChests,
+        d1CurrentRelics,
+        d2CurrentRelics,
+        d3CurrentRelics,
+        d4CurrentRelics
+      ) {
+        return `${remainingChests}|${d1CurrentRelics}|${d2CurrentRelics}|${d3CurrentRelics}|${d4CurrentRelics}`;
+      }
 
-    <div class="box">
-      <label style="font-weight:700; color:#ffcc66;">Set your currently owned Divine Relics (Optional and experimental, if unsure keep at 0)</label>
-    </div>
+      function RUN_STATE(
+        remainingChests,
+        probabilityOfSuccess,
+        d1CurrentRelics,
+        d2CurrentRelics,
+        d3CurrentRelics,
+        d4CurrentRelics,
+        DivineRelicsTotal,
+        wantedD1amount,
+        wantedD2amount,
+        wantedD3amount,
+        wantedD4amount
+      ) {
+        cacheProbabilityStates.clear(); // clear cache for this run
 
-    <div class="box">
-      <label>{{ labelCurrentD1 }}</label>
-      <input v-model.number="currentD1amount" type="number">
-    </div>
+        // compute probability assuming starting probabilityOfSuccess=1
+        const baseProb = stateProb(
+          remainingChests,
+          d1CurrentRelics,
+          d2CurrentRelics,
+          d3CurrentRelics,
+          d4CurrentRelics,
+          DivineRelicsTotal,
+          wantedD1amount,
+          wantedD2amount,
+          wantedD3amount,
+          wantedD4amount
+        );
 
-    <div class="box">
-      <label>{{ labelCurrentD2 }}</label>
-      <input v-model.number="currentD2amount" type="number">
-    </div>
+        // your original GLOBAL_SUM for probabilityOfSuccess=1 would be baseProb
+        const result = probabilityOfSuccess * baseProb;
 
-    <div class="box">
-      <label>{{ labelCurrentD3 }}</label>
-      <input v-model.number="currentD3amount" type="number">
-    </div>
+        //console.log("RESULT (GLOBAL_SUM) =", result);
+        return result;
+      }
 
-    <div class="box">
-      <label>{{ labelCurrentD4 }}</label>
-      <input v-model.number="currentD4amount" type="number">
-    </div>
+      // This version does NOT take probabilityOfSuccess. It assumes current probabilityOfSuccess = 1
+      // and handles the splitting internally (1, 1/2, 1/3, 1/4).
+      function stateProb(
+        remainingChests,
+        d1CurrentRelics,
+        d2CurrentRelics,
+        d3CurrentRelics,
+        d4CurrentRelics,
+        DivineRelicsTotal,
+        wantedD1amount,
+        wantedD2amount,
+        wantedD3amount,
+        wantedD4amount
+      ) {
+        const numberOfDivineRollSuccesses = key(
+          remainingChests,
+          d1CurrentRelics,
+          d2CurrentRelics,
+          d3CurrentRelics,
+          d4CurrentRelics
+        );
+        if (cacheProbabilityStates.has(numberOfDivineRollSuccesses))
+          return cacheProbabilityStates.get(numberOfDivineRollSuccesses);
 
-    <div style="height:12px"></div>
+        // Base case
+        if (remainingChests <= 0) {
+          const val =
+            d1CurrentRelics >= wantedD1amount &&
+            d2CurrentRelics >= wantedD2amount &&
+            d3CurrentRelics >= wantedD3amount &&
+            d4CurrentRelics >= wantedD4amount
+              ? 1
+              : 0;
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
-    <!-- divineChance is fixed at 1/25000 and hidden from UI -->
+        const total =
+          d1CurrentRelics + d2CurrentRelics + d3CurrentRelics + d4CurrentRelics;
+        let val = 0;
 
-    <div class="box">
-      <label>{{ labelWantedD1 }}</label>
-      <input v-model.number="wantedD1amount" type="number">
-    </div>
+        // --- EARLY PHASES (with implicit probabilities) ---
 
-    <div class="box">
-      <label>{{ labelWantedD2 }}</label>
-      <input v-model.number="wantedD2amount" type="number">
-    </div>
+        if (total <= 2) {
+          // 1 branch, probability 1
+          val = stateProb(
+            remainingChests - 1,
+            d1CurrentRelics + 1,
+            d2CurrentRelics,
+            d3CurrentRelics,
+            d4CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount
+          );
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
-    <div class="box">
-      <label>{{ labelWantedD3 }}</label>
-      <input v-model.number="wantedD3amount" type="number">
-    </div>
+        if (3 <= total && total <= 5) {
+          // 2 branches, each with weight 1/2
+          val =
+            0.5 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics + 1,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            0.5 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics + 1,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              );
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
-    <div class="box">
-      <label>{{ labelWantedD4 }}</label>
-      <input v-model.number="wantedD4amount" type="number">
-    </div>
+        if (6 <= total && total <= 9) {
+          // 3 branches, each with weight 1/3
+          val =
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics + 1,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics + 1,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics,
+                d3CurrentRelics + 1,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              );
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
-    <div style="height:12px"></div>
+        // --- LATE PHASE: CAP LOGIC ON d2CurrentRelics, d3CurrentRelics, d4CurrentRelics ---
 
-    <!-- Reroll cost is fixed at 200 gems (hardcoded) -->
+        // Case 1: C C C
+        if (
+          d2CurrentRelics >= DivineRelicsTotal &&
+          d3CurrentRelics >= DivineRelicsTotal &&
+          d4CurrentRelics >= DivineRelicsTotal
+        ) {
+          // only d1CurrentRelics, weight 1
+          val = stateProb(
+            remainingChests - 1,
+            d1CurrentRelics + 1,
+            d2CurrentRelics,
+            d3CurrentRelics,
+            d4CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount
+          );
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
-    <div class="box">
-      <button @click="runSolver">Run Solver</button>
-    </div>
+        // Case 2: C C U
+        if (
+          d2CurrentRelics >= DivineRelicsTotal &&
+          d3CurrentRelics >= DivineRelicsTotal &&
+          d4CurrentRelics < DivineRelicsTotal
+        ) {
+          val =
+            0.5 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics + 1,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            0.5 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics + 1,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              );
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
-    <pre>{{ output }}</pre>
-  </div>
+        // Case 3: C U C
+        if (
+          d2CurrentRelics >= DivineRelicsTotal &&
+          d3CurrentRelics < DivineRelicsTotal &&
+          d4CurrentRelics >= DivineRelicsTotal
+        ) {
+          val =
+            0.5 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics + 1,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            0.5 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics,
+                d3CurrentRelics + 1,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              );
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
-  <script>
-    // ---------------------------
-    // PUT YOUR ENTIRE SOLVER HERE
-    // ---------------------------
-    // (paste your exact stateProb, RUN_STATE, RELIC_SOLVER code here)
+        // Case 4: U C C
+        if (
+          d2CurrentRelics < DivineRelicsTotal &&
+          d3CurrentRelics >= DivineRelicsTotal &&
+          d4CurrentRelics >= DivineRelicsTotal
+        ) {
+          val =
+            0.5 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics + 1,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            0.5 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics + 1,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              );
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
+        // Case 5: C U U
+        if (
+          d2CurrentRelics >= DivineRelicsTotal &&
+          d3CurrentRelics < DivineRelicsTotal &&
+          d4CurrentRelics < DivineRelicsTotal
+        ) {
+          val =
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics + 1,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics,
+                d3CurrentRelics + 1,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics + 1,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              );
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
-let cacheProbabilityStates = new Map();   // cache for (remainingChests,d1CurrentRelics,d2CurrentRelics,d3CurrentRelics,d4CurrentRelics) -> probability for probabilityOfSuccess=1
+        // Case 6: U C U
+        if (
+          d2CurrentRelics < DivineRelicsTotal &&
+          d3CurrentRelics >= DivineRelicsTotal &&
+          d4CurrentRelics < DivineRelicsTotal
+        ) {
+          val =
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics + 1,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics + 1,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics + 1,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              );
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
-// Helper to build a key for the cacheProbabilityStates map
-function key(remainingChests, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics) {
-  return `${remainingChests}|${d1CurrentRelics}|${d2CurrentRelics}|${d3CurrentRelics}|${d4CurrentRelics}`;
-}
+        // Case 7: U U C
+        if (
+          d2CurrentRelics < DivineRelicsTotal &&
+          d3CurrentRelics < DivineRelicsTotal &&
+          d4CurrentRelics >= DivineRelicsTotal
+        ) {
+          val =
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics + 1,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics + 1,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            (1 / 3) *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics,
+                d3CurrentRelics + 1,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              );
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
-function RUN_STATE(remainingChests, probabilityOfSuccess, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) {
-  cacheProbabilityStates.clear();  // clear cache for this run
+        // Case 8: U U U
+        if (
+          d2CurrentRelics < DivineRelicsTotal &&
+          d3CurrentRelics < DivineRelicsTotal &&
+          d4CurrentRelics < DivineRelicsTotal
+        ) {
+          val =
+            0.25 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics + 1,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            0.25 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics + 1,
+                d3CurrentRelics,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            0.25 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics,
+                d3CurrentRelics + 1,
+                d4CurrentRelics,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              ) +
+            0.25 *
+              stateProb(
+                remainingChests - 1,
+                d1CurrentRelics,
+                d2CurrentRelics,
+                d3CurrentRelics,
+                d4CurrentRelics + 1,
+                DivineRelicsTotal,
+                wantedD1amount,
+                wantedD2amount,
+                wantedD3amount,
+                wantedD4amount
+              );
+          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+          return val;
+        }
 
-  // compute probability assuming starting probabilityOfSuccess=1
-  const baseProb = stateProb(remainingChests, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
+        // should never fall through, but just in case:
+        cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+        return val;
+      }
 
-  // your original GLOBAL_SUM for probabilityOfSuccess=1 would be baseProb
-  const result = probabilityOfSuccess * baseProb;
+      function comb(numberOfAttempts, numberOfDivineRollSuccesses) {
+        if (
+          numberOfDivineRollSuccesses < 0 ||
+          numberOfDivineRollSuccesses > numberOfAttempts
+        )
+          return 0;
+        if (
+          numberOfDivineRollSuccesses === 0 ||
+          numberOfDivineRollSuccesses === numberOfAttempts
+        )
+          return 1;
+        let res = 1;
+        for (let i = 1; i <= numberOfDivineRollSuccesses; i++) {
+          res =
+            (res * (numberOfAttempts - (numberOfDivineRollSuccesses - i))) / i;
+        }
+        return res;
+      }
+      function binomPMF(
+        numberOfDivineRollSuccesses,
+        numberOfAttempts,
+        probabilityOfSuccess
+      ) {
+        return (
+          comb(numberOfAttempts, numberOfDivineRollSuccesses) *
+          Math.pow(probabilityOfSuccess, numberOfDivineRollSuccesses) *
+          Math.pow(
+            1 - probabilityOfSuccess,
+            numberOfAttempts - numberOfDivineRollSuccesses
+          )
+        );
+      }
 
-  //console.log("RESULT (GLOBAL_SUM) =", result);
-  return result;
-}
+      function RELIC_SOLVER(
+        TotalRelicChests,
+        DivineCaps,
+        RelicCaps,
+        divineChance,
+        wantedD1amount,
+        wantedD2amount,
+        wantedD3amount,
+        wantedD4amount,
+        currentD1amount,
+        currentD2amount,
+        currentD3amount,
+        currentD4amount
+      ) {
+        let sectionSum = 0;
 
-// This version does NOT take probabilityOfSuccess. It assumes current probabilityOfSuccess = 1
-// and handles the splitting internally (1, 1/2, 1/3, 1/4).
-function stateProb(remainingChests, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) {
-  const numberOfDivineRollSuccesses = key(remainingChests, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics);
-  if (cacheProbabilityStates.has(numberOfDivineRollSuccesses)) return cacheProbabilityStates.get(numberOfDivineRollSuccesses);
-
-  // Base case
-  if (remainingChests <= 0) {
-    const val = (d1CurrentRelics >= wantedD1amount && d2CurrentRelics >= wantedD2amount && d3CurrentRelics >= wantedD3amount && d4CurrentRelics >= wantedD4amount) ? 1 : 0;
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  const total = d1CurrentRelics + d2CurrentRelics + d3CurrentRelics + d4CurrentRelics;
-  let val = 0;
-
-  // --- EARLY PHASES (with implicit probabilities) ---
-
-  if (total <= 2) {
-    // 1 branch, probability 1
-    val = stateProb(remainingChests - 1, d1CurrentRelics + 1, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  if (3 <= total && total <= 5) {
-    // 2 branches, each with weight 1/2
-    val =
-      0.5 * stateProb(remainingChests - 1, d1CurrentRelics + 1, d2CurrentRelics,     d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      0.5 * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics + 1, d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  if (6 <= total && total <= 9) {
-    // 3 branches, each with weight 1/3
-    val =
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics + 1, d2CurrentRelics,     d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics + 1, d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics,     d3CurrentRelics + 1, d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  // --- LATE PHASE: CAP LOGIC ON d2CurrentRelics, d3CurrentRelics, d4CurrentRelics ---
-
-  // Case 1: C C C
-  if (d2CurrentRelics >= DivineRelicsTotal && d3CurrentRelics >= DivineRelicsTotal && d4CurrentRelics >= DivineRelicsTotal) {
-    // only d1CurrentRelics, weight 1
-    val = stateProb(remainingChests - 1, d1CurrentRelics + 1, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  // Case 2: C C U
-  if (d2CurrentRelics >= DivineRelicsTotal && d3CurrentRelics >= DivineRelicsTotal && d4CurrentRelics < DivineRelicsTotal) {
-    val =
-      0.5 * stateProb(remainingChests - 1, d1CurrentRelics + 1, d2CurrentRelics, d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      0.5 * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics, d3CurrentRelics,     d4CurrentRelics + 1, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  // Case 3: C U C
-  if (d2CurrentRelics >= DivineRelicsTotal && d3CurrentRelics < DivineRelicsTotal && d4CurrentRelics >= DivineRelicsTotal) {
-    val =
-      0.5 * stateProb(remainingChests - 1, d1CurrentRelics + 1, d2CurrentRelics, d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      0.5 * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics, d3CurrentRelics + 1, d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  // Case 4: U C C
-  if (d2CurrentRelics < DivineRelicsTotal && d3CurrentRelics >= DivineRelicsTotal && d4CurrentRelics >= DivineRelicsTotal) {
-    val =
-      0.5 * stateProb(remainingChests - 1, d1CurrentRelics + 1, d2CurrentRelics,     d3CurrentRelics, d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      0.5 * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics + 1, d3CurrentRelics, d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  // Case 5: C U U
-  if (d2CurrentRelics >= DivineRelicsTotal && d3CurrentRelics < DivineRelicsTotal && d4CurrentRelics < DivineRelicsTotal) {
-    val =
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics + 1, d2CurrentRelics,     d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics,     d3CurrentRelics + 1, d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics,     d3CurrentRelics,     d4CurrentRelics + 1, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  // Case 6: U C U
-  if (d2CurrentRelics < DivineRelicsTotal && d3CurrentRelics >= DivineRelicsTotal && d4CurrentRelics < DivineRelicsTotal) {
-    val =
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics + 1, d2CurrentRelics,     d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics + 1, d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics,     d3CurrentRelics,     d4CurrentRelics + 1, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  // Case 7: U U C
-  if (d2CurrentRelics < DivineRelicsTotal && d3CurrentRelics < DivineRelicsTotal && d4CurrentRelics >= DivineRelicsTotal) {
-    val =
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics + 1, d2CurrentRelics,     d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics + 1, d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      (1/3) * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics,     d3CurrentRelics + 1, d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  // Case 8: U U U
-  if (d2CurrentRelics < DivineRelicsTotal && d3CurrentRelics < DivineRelicsTotal && d4CurrentRelics < DivineRelicsTotal) {
-    val =
-      0.25 * stateProb(remainingChests - 1, d1CurrentRelics + 1, d2CurrentRelics,     d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      0.25 * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics + 1, d3CurrentRelics,     d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      0.25 * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics,     d3CurrentRelics + 1, d4CurrentRelics,     DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount) +
-      0.25 * stateProb(remainingChests - 1, d1CurrentRelics,     d2CurrentRelics,     d3CurrentRelics,     d4CurrentRelics + 1, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount);
-    cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-    return val;
-  }
-
-  // should never fall through, but just in case:
-  cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-  return val;
-}
-
-function comb(numberOfAttempts, numberOfDivineRollSuccesses) {
-  if (numberOfDivineRollSuccesses < 0 || numberOfDivineRollSuccesses > numberOfAttempts) return 0;
-  if (numberOfDivineRollSuccesses === 0 || numberOfDivineRollSuccesses === numberOfAttempts) return 1;
-  let res = 1;
-  for (let i = 1; i <= numberOfDivineRollSuccesses; i++) {
-    res = res * (numberOfAttempts - (numberOfDivineRollSuccesses - i)) / i;
-  }
-  return res;
-}
-function binomPMF(numberOfDivineRollSuccesses, numberOfAttempts, probabilityOfSuccess) {
-  return comb(numberOfAttempts, numberOfDivineRollSuccesses) * Math.pow(probabilityOfSuccess, numberOfDivineRollSuccesses) * Math.pow(1 - probabilityOfSuccess, numberOfAttempts - numberOfDivineRollSuccesses);
-}
-
-
-function RELIC_SOLVER (
-  TotalRelicChests, DivineCaps, RelicCaps, divineChance,
-  wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
-  currentD1amount, currentD2amount, currentD3amount, currentD4amount
-) {
-  let sectionSum = 0;
-
-  for (let numberOfDivineRollSuccesses = 0; numberOfDivineRollSuccesses <= TotalRelicChests; numberOfDivineRollSuccesses++) {
-
-    // calculate binomial probability once
-    const prob = binomPMF(numberOfDivineRollSuccesses, TotalRelicChests, divineChance);
-
-    // Debug: log every k (numberOfDivineRollSuccesses) and its binomial probability
-    //console.log(`k=${numberOfDivineRollSuccesses}`, `binomProb=${prob}`);
-
-    // BUG FIX: break out if probability is NaN or Infinity
-    if (Number.isNaN(prob) || prob === Infinity) {
-      //console.log("numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses, "FINAL RESULT =", sectionSum);
-      return sectionSum;
-    }
-
-    // pass current owned counts into the state runner so the distribution starts from those amounts
-    sectionSum += prob * RUN_STATE(
-      numberOfDivineRollSuccesses + DivineCaps,
-      1.0,
-      currentD1amount, currentD2amount, currentD3amount, currentD4amount,
-      RelicCaps,
-      wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount
-    );
-
-    //console.log("numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses, "prob after numberOfDivineRollSuccesses =", sectionSum);
-  }
-
-  //console.log("FINAL RESULT =", sectionSum);
-  return sectionSum;
-}
-
-// TODO: Make this user selectable
-
-let TotalRelicChests = 0;
-let DivineCaps = 0; // amount of divine chests
-let RelicCaps = 0; // how many divines you have in total
-let divineChance = 1/25000
-let wantedD1amount = 0, wantedD2amount = 0, wantedD3amount = 0, wantedD4amount = 0; // amount of divine relics across all 4 divine relic types (or the wanted amount, idk)
-let currentD1amount = 0, currentD2amount = 0, currentD3amount = 0, currentD4amount = 0; // example starting inventory
-
-RELIC_SOLVER (TotalRelicChests, DivineCaps, RelicCaps, divineChance, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, currentD1amount, currentD2amount, currentD3amount, currentD4amount);
-
-
-    // ---------------------------
-
-    const app = Vue.createApp({
-      data() {
-        return {
-          TotalRelicChests: 0,
-          DivineCaps: 0,
-          RelicCaps: 0,
-          // Wanted amounts (editable via UI)
-          wantedD1amount: 0,
-          wantedD2amount: 0,
-          wantedD3amount: 0,
-          wantedD4amount: 0,
-          // Current (already-owned) divine relic counts
-          currentD1amount: 0,
-          currentD2amount: 0,
-          currentD3amount: 0,
-          currentD4amount: 0,
-          // Label strings: edit these in the code to customize text shown next to inputs
-          labelTotalRelicChests: 'Total Relic Chests:',
-          labelTotalDivineChests: 'Total Divine Chests',
-          labelTotalDivineRelics: 'Relic Caps',
-          // Divine chance is fixed and hidden from the UI.
-          // Wanted amounts
-          labelWantedD1: 'Rainbow Floor Chance (target):',
-          labelWantedD2: 'Supernova Multipliers (target):',
-          labelWantedD3: 'Rainbow Floor Multi (target):',
-          labelWantedD4: 'Fishing Ticks 5x Chance (target):',
-          // Current owned amounts
-          labelCurrentD1: 'Rainbow Floor Chance (owned):',
-          labelCurrentD2: 'Supernova Multipliers (owned):',
-          labelCurrentD3: 'Rainbow Floor Multi (owned):',
-          labelCurrentD4: 'Fishing Ticks 5x Chance (owned):',
-          output: "Click Run Solver"
-        };
-      },
-      methods: {
-        runSolver() {
-          const prob = RELIC_SOLVER(
-            this.TotalRelicChests,
-            this.DivineCaps,
-            this.RelicCaps,
-            divineChance, // fixed global value (1/25000)
-            this.wantedD1amount,
-            this.wantedD2amount,
-            this.wantedD3amount,
-            this.wantedD4amount,
-            this.currentD1amount,
-            this.currentD2amount,
-            this.currentD3amount,
-            this.currentD4amount
+        for (
+          let numberOfDivineRollSuccesses = 0;
+          numberOfDivineRollSuccesses <= TotalRelicChests;
+          numberOfDivineRollSuccesses++
+        ) {
+          // calculate binomial probability once
+          const prob = binomPMF(
+            numberOfDivineRollSuccesses,
+            TotalRelicChests,
+            divineChance
           );
 
-          // Format a few helpful values
-          const percent = (prob * 100).toFixed(6) + "%";
-          // Plain-language values for non-mathy users
-          const costPerReroll = 200; // fixed reroll cost (gems)
-          const avgRerolls = (prob > 0) ? (1 / prob) : Infinity;
-          const avgRerollsRounded = isFinite(avgRerolls) ? Math.round(avgRerolls).toLocaleString() : '∞';
-          const expectedGems = (prob > 0) ? Math.round(costPerReroll * avgRerolls) : '∞';
+          // Debug: log every k (numberOfDivineRollSuccesses) and its binomial probability
+          //console.log(`k=${numberOfDivineRollSuccesses}`, `binomProb=${prob}`);
 
-          // Multi-line output in the <pre> with plain-language phrasing first
-          this.output =
-            `Probability of succeeding: ${percent}\n` +
-            // TODO: Make this optional via a checkbox as the reroll amount can be apparently confusing and nonsensical to some users (and me)
-            `On average you'll need about ${avgRerollsRounded} rerolls to be successful.\n` +
-            `Average gems spent until target rolled successfully: ${isFinite(expectedGems) ? expectedGems.toLocaleString() : '∞'}` //(at ${costPerReroll} gems per reroll)\n`
+          // BUG FIX: break out if probability is NaN or Infinity
+          if (Number.isNaN(prob) || prob === Infinity) {
+            //console.log("numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses, "FINAL RESULT =", sectionSum);
+            return sectionSum;
+          }
+
+          // pass current owned counts into the state runner so the distribution starts from those amounts
+          sectionSum +=
+            prob *
+            RUN_STATE(
+              numberOfDivineRollSuccesses + DivineCaps,
+              1.0,
+              currentD1amount,
+              currentD2amount,
+              currentD3amount,
+              currentD4amount,
+              RelicCaps,
+              wantedD1amount,
+              wantedD2amount,
+              wantedD3amount,
+              wantedD4amount
+            );
+
+          //console.log("numberOfDivineRollSuccesses=", numberOfDivineRollSuccesses, "prob after numberOfDivineRollSuccesses =", sectionSum);
         }
-      }
-    });
 
-    app.mount("#app");
-  </script>
-</body>
+        //console.log("FINAL RESULT =", sectionSum);
+        return sectionSum;
+      }
+
+      // TODO: Make this user selectable
+
+      let TotalRelicChests = 0;
+      let DivineCaps = 0; // amount of divine chests
+      let RelicCaps = 0; // how many divines you have in total
+      let divineChance = 1 / 25000;
+      let wantedD1amount = 0,
+        wantedD2amount = 0,
+        wantedD3amount = 0,
+        wantedD4amount = 0; // amount of divine relics across all 4 divine relic types (or the wanted amount, idk)
+      let currentD1amount = 0,
+        currentD2amount = 0,
+        currentD3amount = 0,
+        currentD4amount = 0; // example starting inventory
+
+      RELIC_SOLVER(
+        TotalRelicChests,
+        DivineCaps,
+        RelicCaps,
+        divineChance,
+        wantedD1amount,
+        wantedD2amount,
+        wantedD3amount,
+        wantedD4amount,
+        currentD1amount,
+        currentD2amount,
+        currentD3amount,
+        currentD4amount
+      );
+
+      // ---------------------------
+
+      const app = Vue.createApp({
+        data() {
+          return {
+            TotalRelicChests: 0,
+            DivineCaps: 0,
+            RelicCaps: 0,
+            // Wanted amounts (editable via UI)
+            wantedD1amount: 0,
+            wantedD2amount: 0,
+            wantedD3amount: 0,
+            wantedD4amount: 0,
+            // Current (already-owned) divine relic counts
+            currentD1amount: 0,
+            currentD2amount: 0,
+            currentD3amount: 0,
+            currentD4amount: 0,
+            // Label strings: edit these in the code to customize text shown next to inputs
+            labelTotalRelicChests: "Total Relic Chests:",
+            labelTotalDivineChests: "Total Divine Chests",
+            labelTotalDivineRelics: "Total Divine Relics",
+            // Divine chance is fixed and hidden from the UI.
+            // Wanted amounts
+            labelWantedD1: "Rainbow Floor Chance (target):",
+            labelWantedD2: "Supernova Multipliers (target):",
+            labelWantedD3: "Rainbow Floor Multi (target):",
+            labelWantedD4: "Fishing Ticks 5x Chance (target):",
+            // Current owned amounts
+            labelCurrentD1: "Rainbow Floor Chance (owned):",
+            labelCurrentD2: "Supernova Multipliers (owned):",
+            labelCurrentD3: "Rainbow Floor Multi (owned):",
+            labelCurrentD4: "Fishing Ticks 5x Chance (owned):",
+            output: "Click Run Solver",
+          };
+        },
+        methods: {
+          runSolver() {
+            const prob = RELIC_SOLVER(
+              this.TotalRelicChests,
+              this.DivineCaps,
+              this.RelicCaps,
+              divineChance, // fixed global value (1/25000)
+              this.wantedD1amount,
+              this.wantedD2amount,
+              this.wantedD3amount,
+              this.wantedD4amount,
+              this.currentD1amount,
+              this.currentD2amount,
+              this.currentD3amount,
+              this.currentD4amount
+            );
+
+            // Format a few helpful values
+            const percent = (prob * 100).toFixed(6) + "%";
+            // Plain-language values for non-mathy users
+            const costPerReroll = 200; // fixed reroll cost (gems)
+            const avgRerolls = prob > 0 ? 1 / prob : Infinity;
+            const avgRerollsRounded = isFinite(avgRerolls)
+              ? Math.round(avgRerolls).toLocaleString()
+              : "∞";
+            const expectedGems =
+              prob > 0 ? Math.round(costPerReroll * avgRerolls) : "∞";
+
+            // Multi-line output in the <pre> with plain-language phrasing first
+            this.output =
+              `Probability of succeeding: ${percent}\n` +
+              // TODO: Make this optional via a checkbox as the reroll amount can be apparently confusing and nonsensical to some users (and me)
+              `On average you'll need about ${avgRerollsRounded} rerolls to be successful.\n` +
+              `Average gems spent until target rolled successfully: ${
+                isFinite(expectedGems) ? expectedGems.toLocaleString() : "∞"
+              }`;
+          },
+        },
+      });
+
+       app.use(naive)
+      app.mount("#app");
+    </script>
+  </body>
 </html>
