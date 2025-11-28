@@ -43,6 +43,7 @@
 
       <div style="background:#3b2f00; color:#fff; padding:10px; border-radius:6px; margin-bottom:12px; font-weight:700;">
         Experimental changes applied — this site contains experimental features that may break the website. Use at your own risk.
+        <span title="Experimental: setting non-zero owned relics may produce unexpected results" aria-label="Experimental info" style="margin-left:8px; background:#fff; color:#000; border-radius:50%; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">?</span>
       </div>
 
       <div class="box">
@@ -109,7 +110,12 @@
       </div>
 
       <div class="box">
-        <label>{{ labelWantedD4 }}</label>
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <label>{{ labelWantedD4 }}</label>
+          </template>
+            Choose the number of Fishing Tick Relics you want to obtain
+          </n-tooltip>
         <input v-model.number="wantedD4amount" type="number" />
       </div>
 
@@ -118,13 +124,9 @@
       <!-- Reroll cost is fixed at 200 gems (hardcoded) -->
 
       <div class="box">
-        <n-button @click="runSolver" type="primary" size="large" icon-placement="left">
-          <n-icon>
-            <Play20Filled />
-          </n-icon>
+        <n-button @click="runSolver" type="primary" size="large">
           Run Solver
         </n-button>
-        <!--<button @click="runSolver">Run Solver</button>-->
       </div>
 
       <pre>{{ output }}</pre>
