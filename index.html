@@ -41,22 +41,56 @@
     <div id="app">
       <h1>Relic Solver</h1>
 
-      <div style="background:#3b2f00; color:#fff; padding:10px; border-radius:6px; margin-bottom:12px; font-weight:700;">
-        Experimental changes applied — this site contains experimental features that may break the website. Use at your own risk.
+      <div
+        style="
+          background: #3b2f00;
+          color: #fff;
+          padding: 10px;
+          border-radius: 6px;
+          margin-bottom: 12px;
+          font-weight: 700;
+        "
+      >
+        Experimental changes applied — this site contains experimental features
+        that may break the website. Use at your own risk.
       </div>
 
       <div class="box">
-        <label>{{ labelTotalRelicChests }}</label>
+        <n-tooltip
+          :style="{ color:'lightblue', fontWeight:'bold' }"
+          trigger="hover"
+        >
+          <template #trigger>
+            <label>{{ labelTotalRelicChests }}</label>
+          </template>
+          How many Relic Chests you own in total
+        </n-tooltip>
         <input v-model.number="TotalRelicChests" type="number" />
       </div>
 
       <div class="box">
-        <label>{{ labelTotalDivineChests }}</label>
+        <n-tooltip
+          :style="{ color:'lightblue', fontWeight:'bold' }"
+          trigger="hover"
+        >
+          <template #trigger>
+            <label>{{ labelTotalDivineChests }}</label>
+          </template>
+          How many Divine Chests you own in total
+        </n-tooltip>
         <input v-model.number="DivineCaps" type="number" />
       </div>
 
       <div class="box">
-        <label>{{ labelTotalDivineRelics }}</label>
+        <n-tooltip
+          :style="{ color:'lightblue', fontWeight:'bold' }"
+          trigger="hover"
+        >
+          <template #trigger>
+            <label>{{ labelTotalDivineRelics }}</label>
+          </template>
+          How many Divine Relics you own in total
+        </n-tooltip>
         <input v-model.number="RelicCaps" type="number" />
       </div>
 
@@ -64,47 +98,60 @@
 
       <div class="box">
         <n-tag :bordered="false" type="warning" :style="{ fontWeight: 700 }">
-          Set your currently owned Divine Relics (Optional and experimental, if unsure keep at 0)
+          Set your currently owned Divine Relics (Optional and experimental, if
+          unsure keep at 0)
         </n-tag>
       </div>
 
       <div class="box">
-        <n-tooltip :style="{ color:'lightblue', fontWeight:'bold' }" trigger="hover">
+        <n-tooltip
+          :style="{ color:'lightblue', fontWeight:'bold' }"
+          trigger="hover"
+        >
           <template #trigger>
             <label>{{ labelCurrentD1 }}</label>
           </template>
-            Choose the number of "Rainbow Floor Chance" Relics you want to obtain
-          </n-tooltip>
+          Choose the number of "Rainbow Floor Chance" Relics you own
+        </n-tooltip>
         <input v-model.number="currentD1amount" type="number" />
       </div>
 
       <div class="box">
-        <n-tooltip :style="{ color:'lightblue', fontWeight:'bold' }" trigger="hover">
+        <n-tooltip
+          :style="{ color:'lightblue', fontWeight:'bold' }"
+          trigger="hover"
+        >
           <template #trigger>
             <label>{{ labelCurrentD2 }}</label>
           </template>
-            Choose the number of "Supernova Multiplier" Relics you want to obtain
-          </n-tooltip>
+          Choose the number of "Supernova Multiplier" Relics you own
+        </n-tooltip>
         <input v-model.number="currentD2amount" type="number" />
       </div>
 
       <div class="box">
-        <n-tooltip :style="{ color:'lightblue', fontWeight:'bold' }" trigger="hover">
+        <n-tooltip
+          :style="{ color:'lightblue', fontWeight:'bold' }"
+          trigger="hover"
+        >
           <template #trigger>
             <label>{{ labelCurrentD3 }}</label>
           </template>
-            Choose the number of "Rainbow Floor Multi" Relics you want to obtain
-          </n-tooltip>
+          Choose the number of "Rainbow Floor Multi" Relics you own
+        </n-tooltip>
         <input v-model.number="currentD3amount" type="number" />
       </div>
 
       <div class="box">
-        <n-tooltip :style="{ color:'lightblue', fontWeight:'bold' }" trigger="hover">
+        <n-tooltip
+          :style="{ color:'lightblue', fontWeight:'bold' }"
+          trigger="hover"
+        >
           <template #trigger>
             <label>{{ labelCurrentD4 }}</label>
           </template>
-            Choose the number of "Fishing Floor 5x" Relics you want to obtain
-          </n-tooltip>
+          Choose the number of "Fishing Floor 5x" Relics you own
+        </n-tooltip>
         <input v-model.number="currentD4amount" type="number" />
       </div>
 
@@ -113,42 +160,54 @@
       <!-- divineChance is fixed at 1/25000 and hidden from UI -->
 
       <div class="box">
-        <n-tooltip :style="{ color:'lightblue', fontWeight:'bold' }" trigger="hover">
+        <n-tooltip
+          :style="{ color:'lightblue', fontWeight:'bold' }"
+          trigger="hover"
+        >
           <template #trigger>
             <label>{{ labelWantedD1 }}</label>
           </template>
-            Choose the number of "Rainbow Floor Chance" Relics you want to obtain
-          </n-tooltip>
+          Choose the number of "Rainbow Floor Chance" Relics you want to obtain
+        </n-tooltip>
         <input v-model.number="wantedD1amount" type="number" />
       </div>
 
       <div class="box">
-        <n-tooltip :style="{ color:'lightblue', fontWeight:'bold' }" trigger="hover">
+        <n-tooltip
+          :style="{ color:'lightblue', fontWeight:'bold' }"
+          trigger="hover"
+        >
           <template #trigger>
             <label>{{ labelWantedD2 }}</label>
           </template>
-            Choose the number of "Supernova Multiplier" Relics you want to obtain
-          </n-tooltip>
+          Choose the number of "Supernova Multiplier" Relics you want to obtain
+        </n-tooltip>
         <input v-model.number="wantedD2amount" type="number" />
       </div>
 
       <div class="box">
-        <n-tooltip :style="{ color:'lightblue', fontWeight:'bold' }" trigger="hover">
+        <n-tooltip
+          :style="{ color:'lightblue', fontWeight:'bold' }"
+          trigger="hover"
+        >
           <template #trigger>
             <label>{{ labelWantedD3 }}</label>
           </template>
-            Choose the number of "Rainbow Floor Multi" Relics you want to obtain
-          </n-tooltip>
+          Choose the number of "Rainbow Floor Multi" Relics you want to obtain
+        </n-tooltip>
         <input v-model.number="wantedD3amount" type="number" />
       </div>
 
       <div class="box">
-        <n-tooltip :style="{ color:'lightblue', fontWeight:'bold' }" trigger="hover">
+        <n-tooltip
+          :style="{ color:'lightblue', fontWeight:'bold' }"
+          trigger="hover"
+        >
           <template #trigger>
             <label>{{ labelWantedD4 }}</label>
           </template>
-            Choose the number of "Fishing Tick 5x" Relics you want to obtain
-          </n-tooltip>
+          Choose the number of "Fishing Tick 5x" Relics you want to obtain
+        </n-tooltip>
         <input v-model.number="wantedD4amount" type="number" />
       </div>
 
@@ -166,7 +225,6 @@
     </div>
 
     <script>
-
       let cacheProbabilityStates = new Map(); // cache for (remainingChests,d1CurrentRelics,d2CurrentRelics,d3CurrentRelics,d4CurrentRelics) -> probability for probabilityOfSuccess=1
 
       // Helper to build a key for the cacheProbabilityStates map
@@ -911,7 +969,7 @@
         },
       });
 
-       app.use(naive)
+      app.use(naive);
       app.mount("#app");
     </script>
   </body>
