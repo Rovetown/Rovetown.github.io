@@ -45,8 +45,6 @@
         Experimental changes applied — this site contains experimental features that may break the website. Use at your own risk.
       </div>
 
-      <n-button>{{ test_text }}</n-button>
-
       <div class="box">
         <label>{{ labelTotalRelicChests }}</label>
         <input v-model.number="TotalRelicChests" type="number" />
@@ -120,7 +118,12 @@
       <!-- Reroll cost is fixed at 200 gems (hardcoded) -->
 
       <div class="box">
-        <n-button @click="runSolver" type="primary" size="large" icon="Play20Filled">Primary</n-button>
+        <n-button @click="runSolver" type="primary" size="large" icon-placement="left">
+          <n-icon>
+            <Play20Filled />
+          </n-icon>
+          Run Solver
+        </n-button>
         <!--<button @click="runSolver">Run Solver</button>-->
       </div>
 
