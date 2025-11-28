@@ -45,7 +45,7 @@
         Experimental changes applied — this site contains experimental features that may break the website. Use at your own risk.
       </div>
 
-      <n-button>{{ message }}</n-button>
+      <n-button>{{ test_text }}</n-button>
 
 <template>
   <n-button>naive-ui</n-button>
@@ -815,6 +815,7 @@
       const app = Vue.createApp({
         data() {
           return {
+            test_text: "Testing!",
             TotalRelicChests: 0,
             DivineCaps: 0,
             RelicCaps: 0,
