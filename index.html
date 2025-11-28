@@ -47,21 +47,6 @@
 
       <n-button>{{ test_text }}</n-button>
 
-<template>
-  <n-button>naive-ui</n-button>
-</template>
-
-<script>
-  import { defineComponent } from 'vue'
-  import { NButton } from 'naive-ui'
-
-  export default defineComponent({
-    components: {
-      NButton
-    }
-  })
-</script>
-
       <div class="box">
         <label>{{ labelTotalRelicChests }}</label>
         <input v-model.number="TotalRelicChests" type="number" />
@@ -135,7 +120,8 @@
       <!-- Reroll cost is fixed at 200 gems (hardcoded) -->
 
       <div class="box">
-        <button @click="runSolver">Run Solver</button>
+        <n-button @click="runSolver" type="primary" size="large" icon="Play20Filled">Primary</n-button>
+        <!--<button @click="runSolver">Run Solver</button>-->
       </div>
 
       <pre>{{ output }}</pre>
