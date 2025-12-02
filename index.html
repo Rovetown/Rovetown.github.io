@@ -5,7 +5,8 @@
     <title>Relic Solver UI</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://unpkg.com/naive-ui"></script>
-    <style>
+      <script src="https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js"></script>
+      <style>
       body {
         font-family: Arial, sans-serif;
         padding: 20px;
@@ -34,11 +35,15 @@
         margin-top: 20px;
         border-radius: 4px;
       }
+      iconify-icon {
+          display: inline-block;
+      }
     </style>
   </head>
 
   <body>
     <div id="app">
+      <n-config-provider :theme="darkTheme">
       <h1>Relic Solver</h1>
 
       <div
@@ -218,16 +223,39 @@
       <!-- Reroll cost is fixed at 200 gems (hardcoded) -->
 
       <div class="box">
-        <n-button @click="runSolver" type="primary" size="large">
-          Run Solver
-        </n-button>
+          <!-- v-memo prevents the button from re-rendering on unrelated state updates (e.g., progress ticks),
+               keeping Naive UI's loading spinner smooth without restarting each iteration. -->
+          <n-button v-memo="[isRunning]" icon-placement="left" @click="runSolver" type="primary" size="large" :loading="isRunning">
+            <template #icon>
+              <!-- Show play icon when idle; when loading, Naive UI shows its spinner automatically -->
+              <iconify-icon v-if="!isRunning" icon="fa-solid:play" width="18" height="18" aria-hidden="true"></iconify-icon>
+            </template>
+            {{ isRunning ? 'Running…' : 'Run Solver' }}
+          </n-button>
+      </div>
+
+      <div class="box" v-if="isRunning || progress > 0" style="line-height: 0;">
+        <div :key="progressKey" style="display: flex; align-items: center; gap: 8px;">
+          <n-progress
+            :percentage="progress"
+            status="success"
+            :height="18"
+            :show-indicator="false"
+            :rail-color="'#444'"
+            :color="'#18a058'"
+            style="vertical-align: middle; flex: 1;"
+          />
+          <div style="width: 3.5em; text-align: right; color: #eee;">{{ Math.round(progress) }}%</div>
+        </div>
+        <div style="margin-top: 6px; opacity: 0.8; line-height: normal;">{{ progressText }}</div>
       </div>
 
       <pre>{{ output }}</pre>
+      </n-config-provider>
     </div>
 
     <script>
-      let cacheProbabilityStates = new Map(); // cache for (remainingChests,d1CurrentRelics,d2CurrentRelics,d3CurrentRelics,d4CurrentRelics) -> probability for probabilityOfSuccess=1
+        let cacheProbabilityStates = new Map(); // cache for (remainingChests,d1CurrentRelics,d2CurrentRelics,d3CurrentRelics,d4CurrentRelics) -> probability for probabilityOfSuccess=1
 
       // Helper to build a key for the cacheProbabilityStates map
       function key(
@@ -864,6 +892,72 @@
         return sectionSum;
       }
 
+      // Async wrapper that reports progress back to the UI and yields to the event loop
+      // so the progress bar can update during long calculations.
+      async function RELIC_SOLVER_WITH_PROGRESS(
+        TotalRelicChests,
+        DivineCaps,
+        RelicCaps,
+        divineChance,
+        wantedD1amount,
+        wantedD2amount,
+        wantedD3amount,
+        wantedD4amount,
+        currentD1amount,
+        currentD2amount,
+        currentD3amount,
+        currentD4amount,
+        onProgress // optional: (done, total) => void
+      ) {
+        const totalSteps = (TotalRelicChests ?? 0) + 1;
+        let done = 0;
+        let sectionSum = 0;
+
+        for (
+          let numberOfDivineRollSuccesses = 0;
+          numberOfDivineRollSuccesses <= TotalRelicChests;
+          numberOfDivineRollSuccesses++
+        ) {
+          // calculate binomial probability once
+          const prob = binomPMF(
+            numberOfDivineRollSuccesses,
+            TotalRelicChests,
+            divineChance
+          );
+
+          if (Number.isNaN(prob) || prob === Infinity) {
+            if (typeof onProgress === "function") onProgress(totalSteps, totalSteps);
+            return sectionSum;
+          }
+
+          sectionSum +=
+            prob *
+            RUN_STATE(
+              numberOfDivineRollSuccesses + DivineCaps,
+              1.0,
+              currentD1amount,
+              currentD2amount,
+              currentD3amount,
+              currentD4amount,
+              RelicCaps,
+              wantedD1amount,
+              wantedD2amount,
+              wantedD3amount,
+              wantedD4amount
+            );
+
+          done++;
+          if (typeof onProgress === "function") onProgress(done, totalSteps);
+
+          // Yield every ~25 iterations to keep UI responsive
+          if (done % 25 === 0) {
+            await new Promise((r) => setTimeout(r));
+          }
+        }
+
+        return sectionSum;
+      }
+
       // TODO: Make this user selectable
 
       let TotalRelicChests = 0;
@@ -900,6 +994,10 @@
         data() {
           return {
             test_text: "Testing!",
+            // Naive UI theme (dark) for proper colors on dark background
+            darkTheme: naive.darkTheme,
+            // forces progress bar remount to visually reset between runs
+            progressKey: 0,
             TotalRelicChests: 0,
             DivineCaps: 0,
             RelicCaps: 0,
@@ -916,7 +1014,7 @@
             // Label strings: edit these in the code to customize text shown next to inputs
             labelTotalRelicChests: "Total Relic Chests:",
             labelTotalDivineChests: "Total Divine Chests",
-            labelTotalDivineRelics: "Total Divine Relics",
+            labelTotalDivineRelics: "Divine Relic Cap",
             // Divine chance is fixed and hidden from the UI.
             // Wanted amounts
             labelWantedD1: "Rainbow Floor Chance (target):",
@@ -929,24 +1027,52 @@
             labelCurrentD3: "Rainbow Floor Multi (owned):",
             labelCurrentD4: "Fishing Ticks 5x Chance (owned):",
             output: "Click Run Solver",
+            // progress UI state
+            isRunning: false,
+            progress: 0,
+            progressText: "",
           };
         },
         methods: {
-          runSolver() {
-            const prob = RELIC_SOLVER(
-              this.TotalRelicChests,
-              this.DivineCaps,
-              this.RelicCaps,
-              divineChance, // fixed global value (1/25000)
-              this.wantedD1amount,
-              this.wantedD2amount,
-              this.wantedD3amount,
-              this.wantedD4amount,
-              this.currentD1amount,
-              this.currentD2amount,
-              this.currentD3amount,
-              this.currentD4amount
-            );
+          async runSolver() {
+            // Prepare progress UI
+            this.isRunning = true;
+            this.progress = 0;
+            this.progressText = "Starting…";
+            // Force a fresh progress component instance so the rail/fill resets cleanly
+            this.progressKey++;
+            await Vue.nextTick();
+
+            const total = this.TotalRelicChests;
+
+            // Progress callback invoked from the solver
+            const onProgress = (done, totalSteps) => {
+              const pct = totalSteps > 0 ? Math.min(100, Math.round((done / totalSteps) * 100)) : 0;
+              this.progress = pct;
+              this.progressText = `Processing ${done.toLocaleString()} of ${totalSteps.toLocaleString()} iterations…`;
+            };
+
+            let prob = 0;
+            try {
+              prob = await RELIC_SOLVER_WITH_PROGRESS(
+                this.TotalRelicChests,
+                this.DivineCaps,
+                this.RelicCaps,
+                divineChance, // fixed global value (1/25000)
+                this.wantedD1amount,
+                this.wantedD2amount,
+                this.wantedD3amount,
+                this.wantedD4amount,
+                this.currentD1amount,
+                this.currentD2amount,
+                this.currentD3amount,
+                this.currentD4amount,
+                onProgress
+              );
+            } catch (e) {
+              console.error(e);
+              this.output = `Error while running solver: ${e && e.message ? e.message : e}`;
+            }
 
             // Format a few helpful values
             const percent = (prob * 100).toFixed(6) + "%";
@@ -962,11 +1088,14 @@
             // Multi-line output in the <pre> with plain-language phrasing first
             this.output =
               `Probability of succeeding: ${percent}\n` +
-              // TODO: Make this optional via a checkbox as the reroll amount can be apparently confusing and nonsensical to some users (and me)
-              `On average you'll need about ${avgRerollsRounded} rerolls to be successful.\n` +
+              //`On average you'll need about ${avgRerollsRounded} rerolls to be successful.\n` +
               `Average gems spent until target rolled successfully: ${
                 isFinite(expectedGems) ? expectedGems.toLocaleString() : "∞"
               }`;
+
+            this.progress = 100;
+            this.progressText = "Completed";
+            this.isRunning = false;
           },
         },
       });
