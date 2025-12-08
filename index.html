@@ -13,6 +13,32 @@
         background: #222;
         color: #eee;
       }
+      /* Utility: constrain width and align left (not centered) */
+      .narrow {
+        max-width: 900px;
+        margin: 0; /* align left like other content */
+        padding-left: 0;
+        padding-right: 0;
+      }
+      /* Sections for visual separation */
+      .section {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+      }
+      .section-title {
+        font-weight: 800;
+        margin-bottom: 10px;
+        text-decoration: underline;
+      }
+      .section--inputs {
+        background: #1e2a36; /* bluish */
+        border-left: 4px solid #4da3ff;
+      }
+      .section--targets {
+        background: #2a1e36; /* purple-ish */
+        border-left: 4px solid #b084f5;
+      }
       .box {
         margin-bottom: 10px;
       }
@@ -46,7 +72,7 @@
       <n-config-provider :theme="darkTheme">
       <h1>Relic Solver</h1>
 
-      <div
+      <div class="narrow"
         style="
           background: #3b2f00;
           color: #fff;
@@ -60,43 +86,59 @@
         that may break the website. Use at your own risk.
       </div>
 
-      <div class="box">
-        <n-tooltip
-          :style="{ color:'lightblue', fontWeight:'bold' }"
-          trigger="hover"
-        >
-          <template #trigger>
-            <label>{{ labelTotalRelicChests }}</label>
-          </template>
-          How many Relic Chests you own in total
-        </n-tooltip>
-        <input v-model.number="TotalRelicChests" type="number" default-value="0" autosize style="min-width: 10%" />
+      <div class="narrow"
+        style="
+          background: #262626;
+          color: #fff;
+          padding: 12px;
+          border-radius: 6px;
+          margin-bottom: 16px;
+          border-left: 4px solid #e7c157;
+        "
+      >
+        <div style="font-weight: 800; text-decoration: underline; margin-bottom: 6px;">
+          What this tool is for
+        </div>
+        <ul style="margin: 0 0 0 18px; padding: 0;">
+          <li><span style="font-weight: 700;">What it does:</span> estimates your chance to at least reach a chosen outcome based on your chests/caps (rerolls, gems, etc.).</li>
+          <li><span style="font-weight: 700;">How to use:</span> set targets for <strong>1–2</strong> Divine Relic stats (non‑zero). Leave the others at 0.</li>
+          <li><span style="font-weight: 700;">Why not 3–4 at once:</span> the combined math makes probabilities drop sharply. Expect very low, unreliable, and unrealistic percentages.</li>
+          <li><span style="font-weight: 700;">Takeaway:</span> use this to judge if your plan is realistic. High % for 1–2 targets is actionable; tiny % for all 4 means it’s probably not.</li>
+        </ul>
       </div>
 
-      <div class="box">
-        <n-tooltip
-          :style="{ color:'lightblue', fontWeight:'bold' }"
-          trigger="hover"
-        >
-          <template #trigger>
-            <label>{{ labelTotalDivineChests }}</label>
-          </template>
-          How many Divine Chests you own in total
-        </n-tooltip>
-        <input v-model.number="DivineCaps" type="number" default-value="0" autosize style="min-width: 10%" />
-      </div>
+      <!-- Inputs section -->
+      <div class="narrow section section--inputs">
+        <div class="section-title">Inputs</div>
 
-      <div class="box">
-        <n-tooltip
-          :style="{ color:'lightblue', fontWeight:'bold' }"
-          trigger="hover"
-        >
-          <template #trigger>
-            <label>{{ labelTotalDivineRelics }}</label>
-          </template>
-          How many Divine Relics you own in total
-        </n-tooltip>
-        <input v-model.number="RelicCaps" type="number" default-value="0" autosize style="min-width: 10%" />
+        <div class="box">
+          <label>{{ labelTotalRelicChests }}</label>
+          <input v-model.number="TotalRelicChests" type="number" default-value="0" autosize style="min-width: 10%" />
+        </div>
+
+        <div class="box">
+          <label>{{ labelTotalDivineChests }}</label>
+          <input v-model.number="DivineCaps" type="number" default-value="0" autosize style="min-width: 10%" />
+        </div>
+
+        <div class="box">
+          <label>{{ labelTotalDivineRelics }}</label>
+          <input v-model.number="RelicCaps" type="number" default-value="0" autosize style="min-width: 10%" />
+        </div>
+
+        <div class="box" style="margin-top: 8px;">
+          <n-button secondary size="small" @click="showInputHelp = !showInputHelp">
+            {{ showInputHelp ? 'Hide' : 'Show' }} input help
+          </n-button>
+        </div>
+        <div v-if="showInputHelp" style="background:#0f1720; border:1px solid #274664; border-radius:6px; padding:10px; font-size: 0.95em;">
+          <div style="font-weight:700; margin-bottom:6px;">Input help</div>
+          <ul style="margin:0 0 0 18px; padding:0;">
+            <li><strong>Total Relic Chests</strong>: How many Relic Chests you have available to open in total.</li>
+            <li><strong>Total Divine Chests</strong>: How many Divine Chests you can open (cap/stock).</li>
+            <li><strong>Divine Relic Cap</strong>: Shared max cap across Supernova Multiplier, Rainbow Floor Multi, and Fishing Ticks 5x. Rainbow Floor Chance is not limited by this cap.</li>
+          </ul>
+        </div>
       </div>
 
       <div style="height: 12px"></div>
@@ -165,57 +207,45 @@
       -->
 
       <!-- divineChance is fixed at 1/25000 and hidden from UI -->
+      <!-- Targets (Outputs) section -->
+      <div class="narrow section section--targets">
+        <div class="section-title">Desired outcome</div>
 
-      <div class="box">
-        <n-tooltip
-          :style="{ color:'lightblue', fontWeight:'bold' }"
-          trigger="hover"
-        >
-          <template #trigger>
-            <label>{{ labelWantedD1 }}</label>
-          </template>
-          Choose the number of "Rainbow Floor Chance" Relics you want to obtain
-        </n-tooltip>
-        <input v-model.number="wantedD1amount" default-value="0" autosize style="min-width: 10%" type="number" />
-      </div>
+        <div class="box">
+          <label>{{ labelWantedD1 }}</label>
+          <input v-model.number="wantedD1amount" default-value="0" autosize style="min-width: 10%" type="number" />
+        </div>
 
-      <div class="box">
-        <n-tooltip
-          :style="{ color:'lightblue', fontWeight:'bold' }"
-          trigger="hover"
-        >
-          <template #trigger>
-            <label>{{ labelWantedD2 }}</label>
-          </template>
-          Choose the number of "Supernova Multiplier" Relics you want to obtain
-        </n-tooltip>
-        <input v-model.number="wantedD2amount" default-value="0" autosize style="min-width: 10%" type="number" />
-      </div>
+        <div class="box">
+          <label>{{ labelWantedD2 }}</label>
+          <input v-model.number="wantedD2amount" default-value="0" autosize style="min-width: 10%" type="number" />
+        </div>
 
-      <div class="box">
-        <n-tooltip
-          :style="{ color:'lightblue', fontWeight:'bold' }"
-          trigger="hover"
-        >
-          <template #trigger>
-            <label>{{ labelWantedD3 }}</label>
-          </template>
-          Choose the number of "Rainbow Floor Multi" Relics you want to obtain
-        </n-tooltip>
-        <input v-model.number="wantedD3amount" default-value="0" autosize style="min-width: 10%" type="number" />
-      </div>
+        <div class="box">
+          <label>{{ labelWantedD3 }}</label>
+          <input v-model.number="wantedD3amount" default-value="0" autosize style="min-width: 10%" type="number" />
+        </div>
 
-      <div class="box">
-        <n-tooltip
-          :style="{ color:'lightblue', fontWeight:'bold' }"
-          trigger="hover"
-        >
-          <template #trigger>
-            <label>{{ labelWantedD4 }}</label>
-          </template>
-          Choose the number of "Fishing Tick 5x" Relics you want to obtain
-        </n-tooltip>
-        <input v-model.number="wantedD4amount" default-value="0" autosize style="min-width: 10%" type="number" />
+        <div class="box">
+          <label>{{ labelWantedD4 }}</label>
+          <input v-model.number="wantedD4amount" default-value="0" autosize style="min-width: 10%" type="number" />
+        </div>
+
+        <div class="box" style="margin-top: 8px;">
+          <n-button secondary size="small" @click="showTargetHelp = !showTargetHelp">
+            {{ showTargetHelp ? 'Hide' : 'Show' }} outcome help
+          </n-button>
+        </div>
+        <div v-if="showTargetHelp" style="background:#17101f; border:1px solid #5b3d86; border-radius:6px; padding:10px; font-size: 0.95em;">
+          <div style="font-weight:700; margin-bottom:6px;">Desired outcome help</div>
+          <ul style="margin:0 0 0 18px; padding:0;">
+            <li><strong>Rainbow Floor Chance</strong>: Set how many of these relics you want to end up with.</li>
+            <li><strong>Supernova Multiplier</strong>: Your target count for this relic.</li>
+            <li><strong>Rainbow Floor Multi</strong>: Your target count for this relic.</li>
+            <li><strong>Fishing Ticks 5x Chance</strong>: Your target count for this relic.</li>
+          </ul>
+          <div style="margin-top:6px; opacity:0.9;">Tip: For realistic results, set non‑zero targets for only 1–2 relic types and leave the others at 0.</div>
+        </div>
       </div>
 
       <div style="height: 12px"></div>
@@ -234,7 +264,7 @@
           </n-button>
       </div>
 
-      <div class="box" v-if="isRunning || progress > 0" style="line-height: 0;">
+      <div class="box narrow" v-if="isRunning || progress > 0" style="line-height: 0;">
         <div :key="progressKey" style="display: flex; align-items: center; gap: 8px;">
           <n-progress
             :percentage="progress"
@@ -250,7 +280,7 @@
         <div style="margin-top: 6px; opacity: 0.8; line-height: normal;">{{ progressText }}</div>
       </div>
 
-      <pre>{{ output }}</pre>
+      <pre class="narrow" v-if="output">{{ output }}</pre>
       </n-config-provider>
     </div>
 
@@ -1016,21 +1046,25 @@
             labelTotalDivineChests: "Total Divine Chests",
             labelTotalDivineRelics: "Divine Relic Cap",
             // Divine chance is fixed and hidden from the UI.
-            // Wanted amounts
-            labelWantedD1: "Rainbow Floor Chance (target):",
-            labelWantedD2: "Supernova Multipliers (target):",
-            labelWantedD3: "Rainbow Floor Multi (target):",
-            labelWantedD4: "Fishing Ticks 5x Chance (target):",
+            // Desired outcome labels (no "(target)" text)
+            labelWantedD1: "Rainbow Floor Chance:",
+            labelWantedD2: "Supernova Multipliers:",
+            labelWantedD3: "Rainbow Floor Multi:",
+            labelWantedD4: "Fishing Ticks 5x Chance:",
             // Current owned amounts
             labelCurrentD1: "Rainbow Floor Chance (owned):",
             labelCurrentD2: "Supernova Multipliers (owned):",
             labelCurrentD3: "Rainbow Floor Multi (owned):",
             labelCurrentD4: "Fishing Ticks 5x Chance (owned):",
-            output: "Click Run Solver",
+            output: "",
             // progress UI state
             isRunning: false,
             progress: 0,
             progressText: "",
+            // UI: help toggle for inputs
+            showInputHelp: false,
+            // UI: help toggle for desired outcome/targets
+            showTargetHelp: false,
           };
         },
         methods: {
