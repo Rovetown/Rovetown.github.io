@@ -1,101 +1,114 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Relic Solver UI</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <script src="https://unpkg.com/naive-ui"></script>
-      <script src="https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js"></script>
-      <style>
-      body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-        background: #222;
-        color: #eee;
-      }
-      /* Utility: constrain width and align left (not centered) */
-      .narrow {
-        max-width: 900px;
-        margin: 0; /* align left like other content */
-        padding-left: 0;
-        padding-right: 0;
-      }
-      /* Sections for visual separation */
-      .section {
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 16px;
-      }
-      .section-title {
-        font-weight: 800;
-        margin-bottom: 10px;
-        text-decoration: underline;
-      }
-      .section--inputs {
-        background: #1e2a36; /* bluish */
-        border-left: 4px solid #4da3ff;
-      }
-      .section--targets {
-        background: #2a1e36; /* purple-ish */
-        border-left: 4px solid #b084f5;
-      }
-      .box {
-        margin-bottom: 10px;
-      }
-      input {
-        padding: 5px;
-        width: 120px;
-      }
-      label {
-        display: inline-block;
-        width: 280px; /* space between label and input */
-        margin-right: 8px;
-      }
-      button {
-        padding: 10px 20px;
-        cursor: pointer;
-      }
-      pre {
-        background: #111;
-        padding: 10px;
-        margin-top: 20px;
-        border-radius: 4px;
-      }
-      iconify-icon {
-          display: inline-block;
-      }
-    </style>
-  </head>
 
-  <body>
-    <div id="app">
-      <n-config-provider :theme="darkTheme">
+<head>
+  <meta charset="UTF-8" />
+  <title>Relic Solver UI</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/naive-ui"></script>
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@3.0.0/dist/iconify-icon.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #222;
+      color: #eee;
+    }
+
+    /* Utility: constrain width and align left (not centered) */
+    .narrow {
+      max-width: 900px;
+      margin: 0;
+      /* align left like other content */
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    /* Sections for visual separation */
+    .section {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-weight: 800;
+      margin-bottom: 10px;
+      text-decoration: underline;
+    }
+
+    .section--inputs {
+      background: #1e2a36;
+      /* bluish */
+      border-left: 4px solid #4da3ff;
+    }
+
+    .section--targets {
+      background: #2a1e36;
+      /* purple-ish */
+      border-left: 4px solid #b084f5;
+    }
+
+    .box {
+      margin-bottom: 10px;
+    }
+
+    input {
+      padding: 5px;
+      width: 120px;
+    }
+
+    label {
+      display: inline-block;
+      width: 280px;
+      /* space between label and input */
+      margin-right: 8px;
+    }
+
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+
+    pre {
+      background: #111;
+      padding: 10px;
+      margin-top: 20px;
+      border-radius: 4px;
+    }
+
+    iconify-icon {
+      display: inline-block;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <n-config-provider :theme="darkTheme">
       <h1>Relic Solver</h1>
+      <p style="margin-top: -25px; padding-bottom: 10px; font-size: 0.95em; font-style: italic; color: #999;">Updated for 2.0.2</p>
 
-      <div class="narrow"
-        style="
+      <div class="narrow" style="
           background: #3b2f00;
           color: #fff;
           padding: 10px;
           border-radius: 6px;
           margin-bottom: 12px;
           font-weight: 700;
-        "
-      >
+        ">
         Experimental changes applied — this site contains experimental features
         that may break the website. Use at your own risk.
       </div>
 
-      <div class="narrow"
-        style="
+      <div class="narrow" style="
           background: #262626;
           color: #fff;
           padding: 12px;
           border-radius: 6px;
           margin-bottom: 16px;
           border-left: 4px solid #e7c157;
-        "
-      >
+        ">
         <div style="font-weight: 800; text-decoration: underline; margin-bottom: 6px;">
           What this tool is for
         </div>
@@ -193,52 +206,60 @@
       <div style="height: 12px"></div>
 
       <div class="box">
-          <n-button v-memo="[isRunning]" icon-placement="left" @click="runSolver" type="primary" size="large" :loading="isRunning">
-            <template #icon>
-              <iconify-icon v-if="!isRunning" icon="fa-solid:play" width="18" height="18" aria-hidden="true"></iconify-icon>
-            </template>
-            {{ isRunning ? 'Running…' : 'Run Solver' }}
-          </n-button>
+        <n-button v-memo="[isRunning]" icon-placement="left" @click="runSolver" type="primary" size="large" :loading="isRunning">
+          <template #icon>
+            <iconify-icon v-if="!isRunning" icon="fa-solid:play" width="18" height="18" aria-hidden="true"></iconify-icon>
+          </template>
+          {{ isRunning ? 'Running…' : 'Run Solver' }}
+        </n-button>
       </div>
 
       <div class="box narrow" v-if="isRunning || progress > 0" style="line-height: 0;">
         <div :key="progressKey" style="display: flex; align-items: center; gap: 8px;">
-          <n-progress
-            :percentage="progress"
-            status="success"
-            :height="18"
-            :show-indicator="false"
-            :rail-color="'#444'"
-            :color="'#18a058'"
-            style="vertical-align: middle; flex: 1;"
-          />
+          <n-progress :percentage="progress" status="success" :height="18" :show-indicator="false" :rail-color="'#444'" :color="'#18a058'" style="vertical-align: middle; flex: 1;" />
           <div style="width: 3.5em; text-align: right; color: #eee;">{{ Math.round(progress) }}%</div>
         </div>
         <div style="margin-top: 6px; opacity: 0.8; line-height: normal;">{{ progressText }}</div>
       </div>
 
       <pre class="narrow" v-if="output">{{ output }}</pre>
-      </n-config-provider>
-    </div>
+    </n-config-provider>
+  </div>
 
-    <script>
-        let cacheProbabilityStates = new Map();
+  <script>
+    let cacheProbabilityStates = new Map();
 
-      // Helper to build a key for the cacheProbabilityStates map (now with 5 relics)
-      function key(
+    // Helper to build a key for the cacheProbabilityStates map (now with 5 relics)
+    function key(
+      remainingChests,
+      d1CurrentRelics,
+      d2CurrentRelics,
+      d3CurrentRelics,
+      d4CurrentRelics,
+      d5CurrentRelics
+    ) {
+      return `${remainingChests}|${d1CurrentRelics}|${d2CurrentRelics}|${d3CurrentRelics}|${d4CurrentRelics}|${d5CurrentRelics}`;
+    }
+
+    function RUN_STATE(
+      remainingChests,
+      probabilityOfSuccess,
+      d1CurrentRelics,
+      d2CurrentRelics,
+      d3CurrentRelics,
+      d4CurrentRelics,
+      d5CurrentRelics,
+      DivineRelicsTotal,
+      wantedD1amount,
+      wantedD2amount,
+      wantedD3amount,
+      wantedD4amount,
+      wantedD5amount
+    ) {
+      cacheProbabilityStates.clear();
+
+      const baseProb = stateProb(
         remainingChests,
-        d1CurrentRelics,
-        d2CurrentRelics,
-        d3CurrentRelics,
-        d4CurrentRelics,
-        d5CurrentRelics
-      ) {
-        return `${remainingChests}|${d1CurrentRelics}|${d2CurrentRelics}|${d3CurrentRelics}|${d4CurrentRelics}|${d5CurrentRelics}`;
-      }
-
-      function RUN_STATE(
-        remainingChests,
-        probabilityOfSuccess,
         d1CurrentRelics,
         d2CurrentRelics,
         d3CurrentRelics,
@@ -250,12 +271,271 @@
         wantedD3amount,
         wantedD4amount,
         wantedD5amount
-      ) {
-        cacheProbabilityStates.clear();
+      );
 
-        const baseProb = stateProb(
-          remainingChests,
-          d1CurrentRelics,
+      const result = probabilityOfSuccess * baseProb;
+      return result;
+    }
+
+    function stateProb(
+      remainingChests,
+      d1CurrentRelics,
+      d2CurrentRelics,
+      d3CurrentRelics,
+      d4CurrentRelics,
+      d5CurrentRelics,
+      DivineRelicsTotal,
+      wantedD1amount,
+      wantedD2amount,
+      wantedD3amount,
+      wantedD4amount,
+      wantedD5amount
+    ) {
+      const numberOfDivineRollSuccesses = key(
+        remainingChests,
+        d1CurrentRelics,
+        d2CurrentRelics,
+        d3CurrentRelics,
+        d4CurrentRelics,
+        d5CurrentRelics
+      );
+      if (cacheProbabilityStates.has(numberOfDivineRollSuccesses))
+        return cacheProbabilityStates.get(numberOfDivineRollSuccesses);
+
+      // Base case
+      if (remainingChests <= 0) {
+        const val =
+          d1CurrentRelics >= wantedD1amount &&
+          d2CurrentRelics >= wantedD2amount &&
+          d3CurrentRelics >= wantedD3amount &&
+          d4CurrentRelics >= wantedD4amount &&
+          d5CurrentRelics >= wantedD5amount ?
+          1 :
+          0;
+        cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+        return val;
+      }
+
+      const total =
+        d1CurrentRelics + d2CurrentRelics + d3CurrentRelics + d4CurrentRelics + d5CurrentRelics;
+      let val = 0;
+
+      // --- EARLY PHASES (with implicit probabilities) ---
+
+      if (total <= 2) {
+        // 1 branch, probability 1
+        val = stateProb(
+          remainingChests - 1,
+          d1CurrentRelics + 1,
+          d2CurrentRelics,
+          d3CurrentRelics,
+          d4CurrentRelics,
+          d5CurrentRelics,
+          DivineRelicsTotal,
+          wantedD1amount,
+          wantedD2amount,
+          wantedD3amount,
+          wantedD4amount,
+          wantedD5amount
+        );
+        cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+        return val;
+      }
+
+      if (3 <= total && total <= 5) {
+        // 2 branches, each with weight 1/2
+        val =
+          0.5 *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics + 1,
+            d2CurrentRelics,
+            d3CurrentRelics,
+            d4CurrentRelics,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          ) +
+          0.5 *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics,
+            d2CurrentRelics + 1,
+            d3CurrentRelics,
+            d4CurrentRelics,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          );
+        cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+        return val;
+      }
+
+      if (6 <= total && total <= 9) {
+        // 3 branches, each with weight 1/3
+        val =
+          (1 / 3) *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics + 1,
+            d2CurrentRelics,
+            d3CurrentRelics,
+            d4CurrentRelics,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          ) +
+          (1 / 3) *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics,
+            d2CurrentRelics + 1,
+            d3CurrentRelics,
+            d4CurrentRelics,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          ) +
+          (1 / 3) *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics,
+            d2CurrentRelics,
+            d3CurrentRelics + 1,
+            d4CurrentRelics,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          );
+        cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+        return val;
+      }
+
+      if (10 <= total && total <= 13) {
+        // 4 branches, each with weight 1/4
+        val =
+          0.25 *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics + 1,
+            d2CurrentRelics,
+            d3CurrentRelics,
+            d4CurrentRelics,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          ) +
+          0.25 *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics,
+            d2CurrentRelics + 1,
+            d3CurrentRelics,
+            d4CurrentRelics,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          ) +
+          0.25 *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics,
+            d2CurrentRelics,
+            d3CurrentRelics + 1,
+            d4CurrentRelics,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          ) +
+          0.25 *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics,
+            d2CurrentRelics,
+            d3CurrentRelics,
+            d4CurrentRelics + 1,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          );
+        cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+        return val;
+      }
+
+      // --- LATE PHASE: CAP LOGIC ON d2, d3, d4, d5 (d1 is uncapped) ---
+      // Now we have 5 relics total, with d2/d3/d4/d5 sharing the cap
+      // We need to handle all combinations of capped (C) vs uncapped (U) for these 4 relics
+      // That's 2^4 = 16 cases
+
+      const d2Capped = d2CurrentRelics >= DivineRelicsTotal;
+      const d3Capped = d3CurrentRelics >= DivineRelicsTotal;
+      const d4Capped = d4CurrentRelics >= DivineRelicsTotal;
+      const d5Capped = d5CurrentRelics >= DivineRelicsTotal;
+
+      // Count how many are uncapped
+      const uncappedCount = [!d2Capped, !d3Capped, !d4Capped, !d5Capped].filter(Boolean).length;
+
+      // All 4 capped (C C C C) - only d1 available
+      if (uncappedCount === 0) {
+        val = stateProb(
+          remainingChests - 1,
+          d1CurrentRelics + 1,
+          d2CurrentRelics,
+          d3CurrentRelics,
+          d4CurrentRelics,
+          d5CurrentRelics,
+          DivineRelicsTotal,
+          wantedD1amount,
+          wantedD2amount,
+          wantedD3amount,
+          wantedD4amount,
+          wantedD5amount
+        );
+        cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+        return val;
+      }
+
+      // 1 uncapped - split between d1 and the uncapped one (2 branches, 1/2 each)
+      if (uncappedCount === 1) {
+        val = 0.5 * stateProb(
+          remainingChests - 1,
+          d1CurrentRelics + 1,
           d2CurrentRelics,
           d3CurrentRelics,
           d4CurrentRelics,
@@ -268,692 +548,425 @@
           wantedD5amount
         );
 
-        const result = probabilityOfSuccess * baseProb;
-        return result;
-      }
-
-      function stateProb(
-        remainingChests,
-        d1CurrentRelics,
-        d2CurrentRelics,
-        d3CurrentRelics,
-        d4CurrentRelics,
-        d5CurrentRelics,
-        DivineRelicsTotal,
-        wantedD1amount,
-        wantedD2amount,
-        wantedD3amount,
-        wantedD4amount,
-        wantedD5amount
-      ) {
-        const numberOfDivineRollSuccesses = key(
-          remainingChests,
-          d1CurrentRelics,
-          d2CurrentRelics,
-          d3CurrentRelics,
-          d4CurrentRelics,
-          d5CurrentRelics
-        );
-        if (cacheProbabilityStates.has(numberOfDivineRollSuccesses))
-          return cacheProbabilityStates.get(numberOfDivineRollSuccesses);
-
-        // Base case
-        if (remainingChests <= 0) {
-          const val =
-            d1CurrentRelics >= wantedD1amount &&
-            d2CurrentRelics >= wantedD2amount &&
-            d3CurrentRelics >= wantedD3amount &&
-            d4CurrentRelics >= wantedD4amount &&
-            d5CurrentRelics >= wantedD5amount
-              ? 1
-              : 0;
-          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-          return val;
-        }
-
-        const total =
-          d1CurrentRelics + d2CurrentRelics + d3CurrentRelics + d4CurrentRelics + d5CurrentRelics;
-        let val = 0;
-
-        // --- EARLY PHASES (with implicit probabilities) ---
-
-        if (total <= 2) {
-          // 1 branch, probability 1
-          val = stateProb(
-            remainingChests - 1,
-            d1CurrentRelics + 1,
-            d2CurrentRelics,
-            d3CurrentRelics,
-            d4CurrentRelics,
-            d5CurrentRelics,
-            DivineRelicsTotal,
-            wantedD1amount,
-            wantedD2amount,
-            wantedD3amount,
-            wantedD4amount,
-            wantedD5amount
-          );
-          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-          return val;
-        }
-
-        if (3 <= total && total <= 5) {
-          // 2 branches, each with weight 1/2
-          val =
-            0.5 *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics + 1,
-                d2CurrentRelics,
-                d3CurrentRelics,
-                d4CurrentRelics,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              ) +
-            0.5 *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics,
-                d2CurrentRelics + 1,
-                d3CurrentRelics,
-                d4CurrentRelics,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              );
-          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-          return val;
-        }
-
-        if (6 <= total && total <= 9) {
-          // 3 branches, each with weight 1/3
-          val =
-            (1 / 3) *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics + 1,
-                d2CurrentRelics,
-                d3CurrentRelics,
-                d4CurrentRelics,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              ) +
-            (1 / 3) *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics,
-                d2CurrentRelics + 1,
-                d3CurrentRelics,
-                d4CurrentRelics,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              ) +
-            (1 / 3) *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics,
-                d2CurrentRelics,
-                d3CurrentRelics + 1,
-                d4CurrentRelics,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              );
-          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-          return val;
-        }
-
-        if (10 <= total && total <= 13) {
-          // 4 branches, each with weight 1/4
-          val =
-            0.25 *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics + 1,
-                d2CurrentRelics,
-                d3CurrentRelics,
-                d4CurrentRelics,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              ) +
-            0.25 *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics,
-                d2CurrentRelics + 1,
-                d3CurrentRelics,
-                d4CurrentRelics,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              ) +
-            0.25 *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics,
-                d2CurrentRelics,
-                d3CurrentRelics + 1,
-                d4CurrentRelics,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              ) +
-            0.25 *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics,
-                d2CurrentRelics,
-                d3CurrentRelics,
-                d4CurrentRelics + 1,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              );
-          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-          return val;
-        }
-
-        // --- LATE PHASE: CAP LOGIC ON d2, d3, d4, d5 (d1 is uncapped) ---
-        // Now we have 5 relics total, with d2/d3/d4/d5 sharing the cap
-        // We need to handle all combinations of capped (C) vs uncapped (U) for these 4 relics
-        // That's 2^4 = 16 cases
-
-        const d2Capped = d2CurrentRelics >= DivineRelicsTotal;
-        const d3Capped = d3CurrentRelics >= DivineRelicsTotal;
-        const d4Capped = d4CurrentRelics >= DivineRelicsTotal;
-        const d5Capped = d5CurrentRelics >= DivineRelicsTotal;
-
-        // Count how many are uncapped
-        const uncappedCount = [!d2Capped, !d3Capped, !d4Capped, !d5Capped].filter(Boolean).length;
-
-        // All 4 capped (C C C C) - only d1 available
-        if (uncappedCount === 0) {
-          val = stateProb(
-            remainingChests - 1,
-            d1CurrentRelics + 1,
-            d2CurrentRelics,
-            d3CurrentRelics,
-            d4CurrentRelics,
-            d5CurrentRelics,
-            DivineRelicsTotal,
-            wantedD1amount,
-            wantedD2amount,
-            wantedD3amount,
-            wantedD4amount,
-            wantedD5amount
-          );
-          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-          return val;
-        }
-
-        // 1 uncapped - split between d1 and the uncapped one (2 branches, 1/2 each)
-        if (uncappedCount === 1) {
-          val = 0.5 * stateProb(
-            remainingChests - 1,
-            d1CurrentRelics + 1,
-            d2CurrentRelics,
-            d3CurrentRelics,
-            d4CurrentRelics,
-            d5CurrentRelics,
-            DivineRelicsTotal,
-            wantedD1amount,
-            wantedD2amount,
-            wantedD3amount,
-            wantedD4amount,
-            wantedD5amount
-          );
-
-          if (!d2Capped) val += 0.5 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics + 1, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-          if (!d3Capped) val += 0.5 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics + 1, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-          if (!d4Capped) val += 0.5 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics + 1, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-          if (!d5Capped) val += 0.5 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics + 1, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-
-          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-          return val;
-        }
-
-        // 2 uncapped - split between d1 and the 2 uncapped (3 branches, 1/3 each)
-        if (uncappedCount === 2) {
-          val = (1/3) * stateProb(
-            remainingChests - 1,
-            d1CurrentRelics + 1,
-            d2CurrentRelics,
-            d3CurrentRelics,
-            d4CurrentRelics,
-            d5CurrentRelics,
-            DivineRelicsTotal,
-            wantedD1amount,
-            wantedD2amount,
-            wantedD3amount,
-            wantedD4amount,
-            wantedD5amount
-          );
-
-          if (!d2Capped) val += (1/3) * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics + 1, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-          if (!d3Capped) val += (1/3) * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics + 1, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-          if (!d4Capped) val += (1/3) * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics + 1, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-          if (!d5Capped) val += (1/3) * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics + 1, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-
-          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-          return val;
-        }
-
-        // 3 uncapped - split between d1 and the 3 uncapped (4 branches, 1/4 each)
-        if (uncappedCount === 3) {
-          val = 0.25 * stateProb(
-            remainingChests - 1,
-            d1CurrentRelics + 1,
-            d2CurrentRelics,
-            d3CurrentRelics,
-            d4CurrentRelics,
-            d5CurrentRelics,
-            DivineRelicsTotal,
-            wantedD1amount,
-            wantedD2amount,
-            wantedD3amount,
-            wantedD4amount,
-            wantedD5amount
-          );
-
-          if (!d2Capped) val += 0.25 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics + 1, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-          if (!d3Capped) val += 0.25 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics + 1, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-          if (!d4Capped) val += 0.25 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics + 1, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-          if (!d5Capped) val += 0.25 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics + 1, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount, wantedD5amount);
-
-          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-          return val;
-        }
-
-        // 4 uncapped (all 4 are under cap) - split between all 5 (5 branches, 1/5 each)
-        if (uncappedCount === 4) {
-          val =
-            0.2 *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics + 1,
-                d2CurrentRelics,
-                d3CurrentRelics,
-                d4CurrentRelics,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              ) +
-            0.2 *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics,
-                d2CurrentRelics + 1,
-                d3CurrentRelics,
-                d4CurrentRelics,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              ) +
-            0.2 *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics,
-                d2CurrentRelics,
-                d3CurrentRelics + 1,
-                d4CurrentRelics,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              ) +
-            0.2 *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics,
-                d2CurrentRelics,
-                d3CurrentRelics,
-                d4CurrentRelics + 1,
-                d5CurrentRelics,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              ) +
-            0.2 *
-              stateProb(
-                remainingChests - 1,
-                d1CurrentRelics,
-                d2CurrentRelics,
-                d3CurrentRelics,
-                d4CurrentRelics,
-                d5CurrentRelics + 1,
-                DivineRelicsTotal,
-                wantedD1amount,
-                wantedD2amount,
-                wantedD3amount,
-                wantedD4amount,
-                wantedD5amount
-              );
-          cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
-          return val;
-        }
+        if (!d2Capped) val += 0.5 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics + 1, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
+        if (!d3Capped) val += 0.5 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics + 1, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
+        if (!d4Capped) val += 0.5 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics + 1, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
+        if (!d5Capped) val += 0.5 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics + 1, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
 
         cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
         return val;
       }
 
-      function comb(numberOfAttempts, numberOfDivineRollSuccesses) {
-        if (
-          numberOfDivineRollSuccesses < 0 ||
-          numberOfDivineRollSuccesses > numberOfAttempts
-        )
-          return 0;
-        if (
-          numberOfDivineRollSuccesses === 0 ||
-          numberOfDivineRollSuccesses === numberOfAttempts
-        )
-          return 1;
-        let res = 1;
-        for (let i = 1; i <= numberOfDivineRollSuccesses; i++) {
-          res =
-            (res * (numberOfAttempts - (numberOfDivineRollSuccesses - i))) / i;
-        }
-        return res;
-      }
-
-      function binomPMF(
-        numberOfDivineRollSuccesses,
-        numberOfAttempts,
-        probabilityOfSuccess
-      ) {
-        return (
-          comb(numberOfAttempts, numberOfDivineRollSuccesses) *
-          Math.pow(probabilityOfSuccess, numberOfDivineRollSuccesses) *
-          Math.pow(
-            1 - probabilityOfSuccess,
-            numberOfAttempts - numberOfDivineRollSuccesses
-          )
+      // 2 uncapped - split between d1 and the 2 uncapped (3 branches, 1/3 each)
+      if (uncappedCount === 2) {
+        val = (1 / 3) * stateProb(
+          remainingChests - 1,
+          d1CurrentRelics + 1,
+          d2CurrentRelics,
+          d3CurrentRelics,
+          d4CurrentRelics,
+          d5CurrentRelics,
+          DivineRelicsTotal,
+          wantedD1amount,
+          wantedD2amount,
+          wantedD3amount,
+          wantedD4amount,
+          wantedD5amount
         );
+
+        if (!d2Capped) val += (1 / 3) * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics + 1, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
+        if (!d3Capped) val += (1 / 3) * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics + 1, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
+        if (!d4Capped) val += (1 / 3) * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics + 1, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
+        if (!d5Capped) val += (1 / 3) * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics + 1, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
+
+        cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+        return val;
       }
 
-      function RELIC_SOLVER(
-        TotalRelicChests,
-        DivineCaps,
-        RelicCaps,
-        divineChance,
-        wantedD1amount,
-        wantedD2amount,
-        wantedD3amount,
-        wantedD4amount,
-        wantedD5amount,
-        currentD1amount,
-        currentD2amount,
-        currentD3amount,
-        currentD4amount,
-        currentD5amount
-      ) {
-        let sectionSum = 0;
+      // 3 uncapped - split between d1 and the 3 uncapped (4 branches, 1/4 each)
+      if (uncappedCount === 3) {
+        val = 0.25 * stateProb(
+          remainingChests - 1,
+          d1CurrentRelics + 1,
+          d2CurrentRelics,
+          d3CurrentRelics,
+          d4CurrentRelics,
+          d5CurrentRelics,
+          DivineRelicsTotal,
+          wantedD1amount,
+          wantedD2amount,
+          wantedD3amount,
+          wantedD4amount,
+          wantedD5amount
+        );
 
-        for (
-          let numberOfDivineRollSuccesses = 0;
-          numberOfDivineRollSuccesses <= TotalRelicChests;
-          numberOfDivineRollSuccesses++
-        ) {
-          const prob = binomPMF(
-            numberOfDivineRollSuccesses,
-            TotalRelicChests,
-            divineChance
+        if (!d2Capped) val += 0.25 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics + 1, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
+        if (!d3Capped) val += 0.25 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics + 1, d4CurrentRelics, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
+        if (!d4Capped) val += 0.25 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics + 1, d5CurrentRelics, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
+        if (!d5Capped) val += 0.25 * stateProb(remainingChests - 1, d1CurrentRelics, d2CurrentRelics, d3CurrentRelics, d4CurrentRelics, d5CurrentRelics + 1, DivineRelicsTotal, wantedD1amount, wantedD2amount, wantedD3amount, wantedD4amount,
+          wantedD5amount);
+
+        cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+        return val;
+      }
+
+      // 4 uncapped (all 4 are under cap) - split between all 5 (5 branches, 1/5 each)
+      if (uncappedCount === 4) {
+        val =
+          0.2 *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics + 1,
+            d2CurrentRelics,
+            d3CurrentRelics,
+            d4CurrentRelics,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          ) +
+          0.2 *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics,
+            d2CurrentRelics + 1,
+            d3CurrentRelics,
+            d4CurrentRelics,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          ) +
+          0.2 *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics,
+            d2CurrentRelics,
+            d3CurrentRelics + 1,
+            d4CurrentRelics,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          ) +
+          0.2 *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics,
+            d2CurrentRelics,
+            d3CurrentRelics,
+            d4CurrentRelics + 1,
+            d5CurrentRelics,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          ) +
+          0.2 *
+          stateProb(
+            remainingChests - 1,
+            d1CurrentRelics,
+            d2CurrentRelics,
+            d3CurrentRelics,
+            d4CurrentRelics,
+            d5CurrentRelics + 1,
+            DivineRelicsTotal,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
           );
+        cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+        return val;
+      }
 
-          if (Number.isNaN(prob) || prob === Infinity) {
-            return sectionSum;
-          }
+      cacheProbabilityStates.set(numberOfDivineRollSuccesses, val);
+      return val;
+    }
 
-          sectionSum +=
-            prob *
-            RUN_STATE(
-              numberOfDivineRollSuccesses + DivineCaps,
-              1.0,
-              currentD1amount,
-              currentD2amount,
-              currentD3amount,
-              currentD4amount,
-              currentD5amount,
-              RelicCaps,
-              wantedD1amount,
-              wantedD2amount,
-              wantedD3amount,
-              wantedD4amount,
-              wantedD5amount
-            );
+    function comb(numberOfAttempts, numberOfDivineRollSuccesses) {
+      if (
+        numberOfDivineRollSuccesses < 0 ||
+        numberOfDivineRollSuccesses > numberOfAttempts
+      )
+        return 0;
+      if (
+        numberOfDivineRollSuccesses === 0 ||
+        numberOfDivineRollSuccesses === numberOfAttempts
+      )
+        return 1;
+      let res = 1;
+      for (let i = 1; i <= numberOfDivineRollSuccesses; i++) {
+        res =
+          (res * (numberOfAttempts - (numberOfDivineRollSuccesses - i))) / i;
+      }
+      return res;
+    }
+
+    function binomPMF(
+      numberOfDivineRollSuccesses,
+      numberOfAttempts,
+      probabilityOfSuccess
+    ) {
+      return (
+        comb(numberOfAttempts, numberOfDivineRollSuccesses) *
+        Math.pow(probabilityOfSuccess, numberOfDivineRollSuccesses) *
+        Math.pow(
+          1 - probabilityOfSuccess,
+          numberOfAttempts - numberOfDivineRollSuccesses
+        )
+      );
+    }
+
+    function RELIC_SOLVER(
+      TotalRelicChests,
+      DivineCaps,
+      RelicCaps,
+      divineChance,
+      wantedD1amount,
+      wantedD2amount,
+      wantedD3amount,
+      wantedD4amount,
+      wantedD5amount,
+      currentD1amount,
+      currentD2amount,
+      currentD3amount,
+      currentD4amount,
+      currentD5amount
+    ) {
+      let sectionSum = 0;
+
+      for (
+        let numberOfDivineRollSuccesses = 0; numberOfDivineRollSuccesses <= TotalRelicChests; numberOfDivineRollSuccesses++
+      ) {
+        const prob = binomPMF(
+          numberOfDivineRollSuccesses,
+          TotalRelicChests,
+          divineChance
+        );
+
+        if (Number.isNaN(prob) || prob === Infinity) {
+          return sectionSum;
         }
 
-        return sectionSum;
+        sectionSum +=
+          prob *
+          RUN_STATE(
+            numberOfDivineRollSuccesses + DivineCaps,
+            1.0,
+            currentD1amount,
+            currentD2amount,
+            currentD3amount,
+            currentD4amount,
+            currentD5amount,
+            RelicCaps,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          );
       }
 
-      async function RELIC_SOLVER_WITH_PROGRESS(
-        TotalRelicChests,
-        DivineCaps,
-        RelicCaps,
-        divineChance,
-        wantedD1amount,
-        wantedD2amount,
-        wantedD3amount,
-        wantedD4amount,
-        wantedD5amount,
-        currentD1amount,
-        currentD2amount,
-        currentD3amount,
-        currentD4amount,
-        currentD5amount,
-        onProgress
+      return sectionSum;
+    }
+
+    async function RELIC_SOLVER_WITH_PROGRESS(
+      TotalRelicChests,
+      DivineCaps,
+      RelicCaps,
+      divineChance,
+      wantedD1amount,
+      wantedD2amount,
+      wantedD3amount,
+      wantedD4amount,
+      wantedD5amount,
+      currentD1amount,
+      currentD2amount,
+      currentD3amount,
+      currentD4amount,
+      currentD5amount,
+      onProgress
+    ) {
+      const totalSteps = (TotalRelicChests ?? 0) + 1;
+      let done = 0;
+      let sectionSum = 0;
+
+      for (
+        let numberOfDivineRollSuccesses = 0; numberOfDivineRollSuccesses <= TotalRelicChests; numberOfDivineRollSuccesses++
       ) {
-        const totalSteps = (TotalRelicChests ?? 0) + 1;
-        let done = 0;
-        let sectionSum = 0;
+        const prob = binomPMF(
+          numberOfDivineRollSuccesses,
+          TotalRelicChests,
+          divineChance
+        );
 
-        for (
-          let numberOfDivineRollSuccesses = 0;
-          numberOfDivineRollSuccesses <= TotalRelicChests;
-          numberOfDivineRollSuccesses++
-        ) {
-          const prob = binomPMF(
-            numberOfDivineRollSuccesses,
-            TotalRelicChests,
-            divineChance
-          );
-
-          if (Number.isNaN(prob) || prob === Infinity) {
-            if (typeof onProgress === "function") onProgress(totalSteps, totalSteps);
-            return sectionSum;
-          }
-
-          sectionSum +=
-            prob *
-            RUN_STATE(
-              numberOfDivineRollSuccesses + DivineCaps,
-              1.0,
-              currentD1amount,
-              currentD2amount,
-              currentD3amount,
-              currentD4amount,
-              currentD5amount,
-              RelicCaps,
-              wantedD1amount,
-              wantedD2amount,
-              wantedD3amount,
-              wantedD4amount,
-              wantedD5amount
-            );
-
-          done++;
-          if (typeof onProgress === "function") onProgress(done, totalSteps);
-
-          if (done % 25 === 0) {
-            await new Promise((r) => setTimeout(r));
-          }
+        if (Number.isNaN(prob) || prob === Infinity) {
+          if (typeof onProgress === "function") onProgress(totalSteps, totalSteps);
+          return sectionSum;
         }
 
-        return sectionSum;
+        sectionSum +=
+          prob *
+          RUN_STATE(
+            numberOfDivineRollSuccesses + DivineCaps,
+            1.0,
+            currentD1amount,
+            currentD2amount,
+            currentD3amount,
+            currentD4amount,
+            currentD5amount,
+            RelicCaps,
+            wantedD1amount,
+            wantedD2amount,
+            wantedD3amount,
+            wantedD4amount,
+            wantedD5amount
+          );
+
+        done++;
+        if (typeof onProgress === "function") onProgress(done, totalSteps);
+
+        if (done % 25 === 0) {
+          await new Promise((r) => setTimeout(r));
+        }
       }
 
-      const app = Vue.createApp({
-        data() {
-          return {
-            test_text: "Testing!",
-            darkTheme: naive.darkTheme,
-            progressKey: 0,
-            TotalRelicChests: 0,
-            DivineCaps: 0,
-            RelicCaps: 5,
-            // Wanted amounts (5 relics now)
-            wantedD1amount: 0,
-            wantedD2amount: 0,
-            wantedD3amount: 0,
-            wantedD4amount: 0,
-            wantedD5amount: 0,
-            // Current (already-owned) divine relic counts
-            currentD1amount: 0,
-            currentD2amount: 0,
-            currentD3amount: 0,
-            currentD4amount: 0,
-            currentD5amount: 0,
-            // Labels
-            labelTotalRelicChests: "Total Relic Chests:",
-            labelTotalDivineChests: "Total Divine Chests",
-            labelTotalDivineRelics: "Divine Relic Cap",
-            // Update these labels to match your 5th relic's name
-            labelWantedD1: "Rainbow Floor Chance:",
-            labelWantedD2: "Supernova Multipliers:",
-            labelWantedD3: "Rainbow Floor Multi:",
-            labelWantedD4: "Fishing Ticks 5x Chance:",
-            labelWantedD5: "[5th Relic Name]:", // UPDATE THIS
-            labelCurrentD1: "Rainbow Floor Chance (owned):",
-            labelCurrentD2: "Supernova Multipliers (owned):",
-            labelCurrentD3: "Rainbow Floor Multi (owned):",
-            labelCurrentD4: "Fishing Ticks 5x Chance (owned):",
-            labelCurrentD5: "[5th Relic Name] (owned):", // UPDATE THIS
-            output: "",
-            isRunning: false,
-            progress: 0,
-            progressText: "",
-            showInputHelp: false,
-            showTargetHelp: false,
+      return sectionSum;
+    }
+
+    const app = Vue.createApp({
+      data() {
+        return {
+          test_text: "Testing!",
+          darkTheme: naive.darkTheme,
+          progressKey: 0,
+          TotalRelicChests: 0,
+          DivineCaps: 0,
+          RelicCaps: 5,
+          // Wanted amounts (5 relics now)
+          wantedD1amount: 0,
+          wantedD2amount: 0,
+          wantedD3amount: 0,
+          wantedD4amount: 0,
+          wantedD5amount: 0,
+          // Current (already-owned) divine relic counts
+          currentD1amount: 0,
+          currentD2amount: 0,
+          currentD3amount: 0,
+          currentD4amount: 0,
+          currentD5amount: 0,
+          // Labels
+          labelTotalRelicChests: "Total Relic Chests:",
+          labelTotalDivineChests: "Total Divine Chests",
+          labelTotalDivineRelics: "Divine Relic Cap",
+          labelWantedD1: "Rainbow Floor Chance:",
+          labelWantedD2: "Supernova Multipliers:",
+          labelWantedD3: "Rainbow Floor Multi:",
+          labelWantedD4: "Fishing Ticks 5x Chance:",
+          labelWantedD5: "Rainbow Void Portal Chance:",
+          labelCurrentD1: "Rainbow Floor Chance (owned):",
+          labelCurrentD2: "Supernova Multipliers (owned):",
+          labelCurrentD3: "Rainbow Floor Multi (owned):",
+          labelCurrentD4: "Fishing Ticks 5x Chance (owned):",
+          labelCurrentD5: "Fishing Ticks 5x Chance (owned):",
+          output: "",
+          isRunning: false,
+          progress: 0,
+          progressText: "",
+          showInputHelp: false,
+          showTargetHelp: false,
+        };
+      },
+      methods: {
+        async runSolver() {
+          this.isRunning = true;
+          this.progress = 0;
+          this.progressText = "Starting…";
+          this.progressKey++;
+          await Vue.nextTick();
+
+          const total = this.TotalRelicChests;
+
+          const onProgress = (done, totalSteps) => {
+            const pct = totalSteps > 0 ? Math.min(100, Math.round((done / totalSteps) * 100)) : 0;
+            this.progress = pct;
+            this.progressText = `Processing ${done.toLocaleString()} of ${totalSteps.toLocaleString()} iterations…`;
           };
-        },
-        methods: {
-          async runSolver() {
-            this.isRunning = true;
-            this.progress = 0;
-            this.progressText = "Starting…";
-            this.progressKey++;
-            await Vue.nextTick();
 
-            const total = this.TotalRelicChests;
+          let prob = 0;
+          try {
+            const divineChance = 1 / 25000;
+            prob = await RELIC_SOLVER_WITH_PROGRESS(
+              this.TotalRelicChests,
+              this.DivineCaps,
+              this.RelicCaps,
+              divineChance,
+              this.wantedD1amount,
+              this.wantedD2amount,
+              this.wantedD3amount,
+              this.wantedD4amount,
+              this.wantedD5amount,
+              this.currentD1amount,
+              this.currentD2amount,
+              this.currentD3amount,
+              this.currentD4amount,
+              this.currentD5amount,
+              onProgress
+            );
+          } catch (e) {
+            console.error(e);
+            this.output = `Error while running solver: ${e && e.message ? e.message : e}`;
+          }
 
-            const onProgress = (done, totalSteps) => {
-              const pct = totalSteps > 0 ? Math.min(100, Math.round((done / totalSteps) * 100)) : 0;
-              this.progress = pct;
-              this.progressText = `Processing ${done.toLocaleString()} of ${totalSteps.toLocaleString()} iterations…`;
-            };
+          const percent = (prob * 100).toFixed(6) + "%";
+          const costPerReroll = 200;
+          const avgRerolls = prob > 0 ? 1 / prob : Infinity;
+          const avgRerollsRounded = isFinite(avgRerolls) ?
+            Math.ceil(avgRerolls).toLocaleString() :
+            "∞";
+          const expectedGems =
+            prob > 0 ? Math.ceil(avgRerolls) * costPerReroll : "∞";
 
-            let prob = 0;
-            try {
-              const divineChance = 1 / 25000;
-              prob = await RELIC_SOLVER_WITH_PROGRESS(
-                this.TotalRelicChests,
-                this.DivineCaps,
-                this.RelicCaps,
-                divineChance,
-                this.wantedD1amount,
-                this.wantedD2amount,
-                this.wantedD3amount,
-                this.wantedD4amount,
-                this.wantedD5amount,
-                this.currentD1amount,
-                this.currentD2amount,
-                this.currentD3amount,
-                this.currentD4amount,
-                this.currentD5amount,
-                onProgress
-              );
-            } catch (e) {
-              console.error(e);
-              this.output = `Error while running solver: ${e && e.message ? e.message : e}`;
-            }
-
-            const percent = (prob * 100).toFixed(6) + "%";
-            const costPerReroll = 200;
-            const avgRerolls = prob > 0 ? 1 / prob : Infinity;
-            const avgRerollsRounded = isFinite(avgRerolls)
-              ? Math.round(avgRerolls).toLocaleString()
-              : "∞";
-            const expectedGems =
-              prob > 0 ? Math.round(costPerReroll * avgRerolls) : "∞";
-
-            this.output =
-              `Probability of succeeding: ${percent}\n` +
-              `Average gems spent until target rolled successfully: ${
+          this.output =
+            `Probability of succeeding: ${percent}\n` +
+            `Average gems spent until target rolled successfully: ${
                 isFinite(expectedGems) ? expectedGems.toLocaleString() : "∞"
               }`;
 
-            this.progress = 100;
-            this.progressText = "Completed";
-            this.isRunning = false;
-          },
+          this.progress = 100;
+          this.progressText = "Completed";
+          this.isRunning = false;
         },
-      });
+      },
+    });
 
-      app.use(naive);
-      app.mount("#app");
-    </script>
-  </body>
+    app.use(naive);
+    app.mount("#app");
+  </script>
+</body>
+
 </html>
