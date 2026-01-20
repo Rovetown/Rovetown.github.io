@@ -850,8 +850,9 @@
         done++;
         if (typeof onProgress === "function") onProgress(done, totalSteps);
 
-        if (done % 25 === 0) {
-          await new Promise((r) => setTimeout(r));
+        if (done % 10 === 0) {
+          if (typeof onProgress === "function") onProgress(done, totalSteps);
+          await new Promise((r) => setTimeout(r, 0));
         }
       }
 
@@ -910,10 +911,25 @@
           await Vue.nextTick();
 
           const total = this.TotalRelicChests;
+          let lastRealProgress = 0;
+
+          // Start fake progress immediately
+          this.progress = 15; // Start at 5% immediately for visual feedback (idk if this even works lol)
+
+          // Smooth fake progress that runs independently
+          const fakeProgressInterval = setInterval(() => {
+            if (this.isRunning) {
+              // Smoothly approach 90% but never reach it until solver finishes
+              const target = Math.max(lastRealProgress * 0.9, 90);
+              if (this.progress < target) {
+                const diff = target - this.progress;
+                this.progress = Math.min(target, this.progress + Math.max(0.5, diff * 0.08));
+              }
+            }
+          }, 50); // Update every 50ms for smoother animation
 
           const onProgress = (done, totalSteps) => {
-            const pct = totalSteps > 0 ? Math.min(100, Math.round((done / totalSteps) * 100)) : 0;
-            this.progress = pct;
+            lastRealProgress = totalSteps > 0 ? (done / totalSteps) * 100 : 0;
             this.progressText = `Processing ${done.toLocaleString()} of ${totalSteps.toLocaleString()} iterations…`;
           };
 
@@ -942,6 +958,9 @@
             this.output = `Error while running solver: ${e && e.message ? e.message : e}`;
           }
 
+          clearInterval(fakeProgressInterval);
+          this.progress = 100;
+
           const percent = (prob * 100).toFixed(6) + "%";
           const costPerReroll = 200;
           const avgRerolls = prob > 0 ? 1 / prob : Infinity;
@@ -954,10 +973,9 @@
           this.output =
             `Probability of succeeding: ${percent}\n` +
             `Average gems spent until target rolled successfully: ${
-                isFinite(expectedGems) ? expectedGems.toLocaleString() : "∞"
-              }`;
+      isFinite(expectedGems) ? expectedGems.toLocaleString() : "∞"
+    }`;
 
-          this.progress = 100;
           this.progressText = "Completed";
           this.isRunning = false;
         },
